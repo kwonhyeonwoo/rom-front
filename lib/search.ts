@@ -2,8 +2,8 @@ import { seminars, type Seminar } from "./seminars";
 
 export const PAGE_SIZE = 6;
 
-export const regionOptions = ["서울", "경기", "인천", "대전", "대구", "부산", "광주", "온라인"];
-export const categoryOptions = ["도수치료", "테이핑", "운동치료", "필라테스", "신경계 재활", "보수교육"];
+export const regionOptions = ["서울", "경기", "인천", "대전", "대구", "부산", "광주", "울산", "온라인"];
+export const categoryOptions = ["도수치료", "테이핑", "운동치료", "필라테스", "신경계 재활", "심장호흡", "보수교육"];
 export const periodOptions = [
   { value: "2w", label: "2주 이내", maxDday: 14 },
   { value: "1m", label: "한 달 이내", maxDday: 31 },
@@ -102,15 +102,17 @@ export function searchSeminars(filters: SearchFilters) {
 }
 
 function inPriceRange(seminar: Seminar, min: number, max: number) {
+  if (seminar.price === null) return false;
   return max === 0 ? seminar.price === 0 : seminar.price >= min && seminar.price <= max;
 }
 
 function compareBy(sort: SearchFilters["sort"]) {
   switch (sort) {
     case "price":
-      return (a: Seminar, b: Seminar) => a.price - b.price;
+      // 가격 미공개는 맨 뒤로
+      return (a: Seminar, b: Seminar) => (a.price ?? Infinity) - (b.price ?? Infinity);
     case "latest":
-      // 목업 데이터는 최근 등록 순서대로 배열 뒤에 추가된다고 가정
+      // 수집 데이터는 최근 등록 순서대로 배열 뒤에 추가된다고 가정
       return (a: Seminar, b: Seminar) => seminars.indexOf(b) - seminars.indexOf(a);
     default:
       return (a: Seminar, b: Seminar) => a.dday - b.dday;
