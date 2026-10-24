@@ -1,19 +1,53 @@
+"use client";
+
+import { useState } from "react";
+import type { Provider } from "@supabase/supabase-js";
+
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
-const button = "flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl text-[15.5px] font-bold";
+const button =
+  "flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl text-[15.5px] font-bold disabled:opacity-60";
 
-// Supabase Auth 연동 전까지는 화면만 있는 버튼
 export function SocialLoginButtons({ action }: { action: "로그인" | "시작하기" }) {
+  const [pending, setPending] = useState<Provider | null>(null);
+  const [error, setError] = useState(false);
+
+  const signIn = async (provider: Provider) => {
+    setPending(provider);
+    setError(false);
+    const { error } = await getSupabaseBrowserClient().auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    // 성공하면 카카오·구글 화면으로 이동하므로 실패했을 때만 상태를 되돌린다
+    if (error) {
+      setPending(null);
+      setError(true);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2.5">
-      <button type="button" className={cn(button, "bg-[#FEE500] text-[#191919]")}>
+      <button
+        type="button"
+        disabled={pending !== null}
+        onClick={() => signIn("kakao")}
+        className={cn(button, "bg-[#FEE500] text-[#191919]")}
+      >
         <KakaoIcon />
         카카오로 {action}
       </button>
-      <button type="button" className={cn(button, "border border-[#DEDEDE] bg-white text-ink")}>
+      <button
+        type="button"
+        disabled={pending !== null}
+        onClick={() => signIn("google")}
+        className={cn(button, "border border-[#DEDEDE] bg-white text-ink")}
+      >
         <GoogleIcon />
         Google로 {action}
       </button>
+      {error && <p className="text-[13px] text-soon">로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.</p>}
     </div>
   );
 }

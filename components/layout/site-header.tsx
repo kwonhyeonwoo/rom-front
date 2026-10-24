@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Container } from "./container";
+import { HeaderAuth } from "./header-auth";
 import { Logo } from "./logo";
 
 const navItems = [
@@ -11,8 +12,6 @@ const navItems = [
   { label: "마감 임박", href: "/search?sort=deadline" },
   { label: "강사", href: "/instructors" },
 ];
-
-const pillButton = "inline-flex h-10 items-center justify-center rounded-full px-[18px] text-sm font-semibold whitespace-nowrap";
 
 export function SiteHeader({
   searchSlot,
@@ -44,26 +43,14 @@ export function SiteHeader({
           <button type="button" aria-label="알림" className="mr-1.5 text-[#555] hover:text-ink">
             <Bell size={21} strokeWidth={1.7} />
           </button>
-          <Link href="/login" className={cn(pillButton, "px-2.5 text-[14.5px] text-ink")}>
-            로그인
-          </Link>
-          <Link href="/signup" className={cn(pillButton, "bg-ink text-white")}>
-            회원가입
-          </Link>
+          <HeaderAuth />
         </div>
       </Container>
 
       {!hideOnMobile && (
         <div className="flex h-14 items-center justify-between px-5 md:hidden">
           <Logo className="text-[26px]" />
-          <div className="flex items-center gap-1.5">
-            <Link href="/login" className={cn(pillButton, "h-[34px] px-2.5 text-ink")}>
-              로그인
-            </Link>
-            <Link href="/signup" className={cn(pillButton, "h-[34px] bg-ink px-3.5 text-[13.5px] text-white")}>
-              회원가입
-            </Link>
-          </div>
+          <HeaderAuth mobile />
         </div>
       )}
     </header>
