@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
-import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { QueryProvider } from "@/components/providers/query-provider";
 import "./globals.css";
 
@@ -21,13 +19,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
-      {/* 모바일 하단 탭바 높이만큼 아래 여백 */}
-      <body className="flex min-h-full flex-col pb-[76px] md:pb-0">
-        <QueryProvider>
-          <div className="flex-1">{children}</div>
-          <SiteFooter />
-          <MobileTabBar />
-        </QueryProvider>
+      <body className="flex min-h-full flex-col">
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
