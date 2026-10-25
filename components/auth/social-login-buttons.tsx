@@ -5,11 +5,17 @@ import type { Provider } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const button =
   "flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl text-[15.5px] font-bold disabled:opacity-60";
 
-export function SocialLoginButtons({ action }: { action: "로그인" | "시작하기" }) {
+export function SocialLoginButtons({
+  action,
+}: {
+  action: "로그인" | "시작하기";
+}) {
+  const router = useRouter();
   const [pending, setPending] = useState<Provider | null>(null);
   const [error, setError] = useState(false);
 
@@ -20,10 +26,12 @@ export function SocialLoginButtons({ action }: { action: "로그인" | "시작�
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    router.push("/");
     // 성공하면 카카오·구글 화면으로 이동하므로 실패했을 때만 상태를 되돌린다
     if (error) {
       setPending(null);
       setError(true);
+      console.log("error", error);
     }
   };
 
@@ -47,7 +55,11 @@ export function SocialLoginButtons({ action }: { action: "로그인" | "시작�
         <GoogleIcon />
         Google로 {action}
       </button>
-      {error && <p className="text-[13px] text-soon">로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.</p>}
+      {error && (
+        <p className="text-[13px] text-soon">
+          로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.
+        </p>
+      )}
     </div>
   );
 }
