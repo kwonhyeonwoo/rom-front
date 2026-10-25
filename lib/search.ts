@@ -55,6 +55,8 @@ export type SearchFilters = {
   price: string | null;
   weekend: boolean;
   credit: boolean;
+  // 보수교육 인정이 아닌 사설 세미나만
+  privateOnly: boolean;
   closingSoon: boolean;
   sort: (typeof sortOptions)[number]["value"];
   page: number;
@@ -76,6 +78,7 @@ export function parseFilters(params: RawParams): SearchFilters {
     price: pick(priceOptions, first(params.price)),
     weekend: first(params.weekend) === "1",
     credit: first(params.credit) === "1",
+    privateOnly: first(params.private) === "1",
     closingSoon: first(params.closingSoon) === "1",
     sort: (pick(sortOptions, first(params.sort)) ?? "deadline") as SearchFilters["sort"],
     page: Number.isInteger(page) && page > 0 ? page : 1,
@@ -92,6 +95,7 @@ export function toQueryString(filters: SearchFilters) {
   if (filters.price) params.set("price", filters.price);
   if (filters.weekend) params.set("weekend", "1");
   if (filters.credit) params.set("credit", "1");
+  if (filters.privateOnly) params.set("private", "1");
   if (filters.closingSoon) params.set("closingSoon", "1");
   if (filters.sort !== "deadline") params.set("sort", filters.sort);
   if (filters.page > 1) params.set("page", String(filters.page));
@@ -107,6 +111,7 @@ export function toApiQuery(filters: SearchFilters, limit = PAGE_SIZE) {
   if (filters.category) params.set("category", filters.category);
   if (filters.weekend) params.set("weekend", "true");
   if (filters.credit) params.set("ceOnly", "true");
+  if (filters.privateOnly) params.set("excludeCe", "true");
   if (filters.closingSoon) params.set("closingSoon", "true");
 
   const price = priceOptions.find((option) => option.value === filters.price);

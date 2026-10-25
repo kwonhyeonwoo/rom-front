@@ -3,6 +3,7 @@
 import { SeminarCard } from "@/components/seminar/seminar-card";
 import { SeminarListItem } from "@/components/seminar/seminar-list-item";
 import { ListStatus } from "@/components/seminar/list-status";
+import { SeminarCardSkeleton, SeminarListItemSkeleton, SkeletonList } from "@/components/seminar/seminar-skeleton";
 import { Container } from "@/components/layout/container";
 import { useSeminarsQuery } from "@/hooks/queries/seminar/useSeminarsQuery";
 import type { SearchFilters } from "@/lib/search";
@@ -39,7 +40,16 @@ export function SearchResults({ filters }: { filters: SearchFilters }) {
       </div>
 
       <Container className={cn("transition-opacity", isPlaceholderData && "opacity-60")}>
-        {items.length === 0 ? (
+        {status === "pending" ? (
+          <>
+            <div className="hidden grid-cols-3 gap-x-6 gap-y-10 pt-[34px] md:grid">
+              <SkeletonList count={6} render={(index) => <SeminarCardSkeleton key={index} thumbClassName="h-[269px]" />} />
+            </div>
+            <div className="md:hidden">
+              <SkeletonList count={5} render={(index) => <SeminarListItemSkeleton key={index} />} />
+            </div>
+          </>
+        ) : items.length === 0 ? (
           <ListStatus
             status={status}
             empty="조건에 맞는 세미나가 없어요. 필터를 줄이거나 다른 검색어로 찾아보세요."

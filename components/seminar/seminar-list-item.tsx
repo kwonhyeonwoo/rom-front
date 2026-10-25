@@ -1,5 +1,6 @@
 import { formatPrice, type Seminar } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
+import { BookmarkButton } from "./bookmark-button";
 import { DDay } from "./dday";
 import { Credit, SeminarLink } from "./seminar-card";
 import { SeminarPoster } from "./seminar-poster";
@@ -12,7 +13,10 @@ export function SeminarListItem({ seminar, className }: { seminar: Seminar; clas
         <SeminarPoster poster={seminar.poster} width={76} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-        <span className="truncate text-xs text-sub">{seminar.host}</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-xs text-sub">{seminar.host}</span>
+          <BookmarkButton seminarId={seminar.id} variant="plain" className="-my-1.5 -mr-1.5 shrink-0" />
+        </div>
         <h3 className="line-clamp-2 text-[15px] leading-[1.38] font-bold tracking-[-0.03em]">
           <SeminarLink seminar={seminar} />
         </h3>

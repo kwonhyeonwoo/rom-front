@@ -50,12 +50,12 @@ function SearchFallback() {
   return (
     <>
       <SiteHeader hideOnMobile />
-      <Container className="animate-pulse pt-11" aria-busy>
-        <div className="h-9 w-72 rounded-lg bg-surface" />
-        <div className="mt-6 h-[38px] w-full max-w-[640px] rounded-full bg-surface" />
+      <Container className="pt-11" aria-busy>
+        <div className="skeleton h-9 w-72 rounded-lg" />
+        <div className="skeleton mt-6 h-[38px] w-full max-w-[640px] rounded-full" />
         <div className="mt-[34px] grid gap-6 md:grid-cols-3">
           {Array.from({ length: 3 }, (_, index) => (
-            <div key={index} className="h-[269px] rounded-[14px] bg-surface" />
+            <div key={index} className="skeleton h-[269px] rounded-[14px]" />
           ))}
         </div>
       </Container>

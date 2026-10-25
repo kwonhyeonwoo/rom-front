@@ -6,10 +6,11 @@ import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "./user-avatar";
 
 const pillButton = "inline-flex h-10 items-center justify-center rounded-full px-[18px] text-sm font-semibold whitespace-nowrap";
 
-// 헤더 오른쪽 로그인/회원가입 또는 내 이름/로그아웃
+// 헤더 오른쪽 로그인/회원가입 또는 내 이름(마이페이지 링크)/로그아웃
 export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   const session = useSession();
   const { data: user } = useUserQuery(Boolean(session));
@@ -22,7 +23,15 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
     const name = user?.name ?? session.user.email ?? "회원";
     return (
       <div className="flex items-center gap-1.5">
-        {!mobile && <span className="mr-1 max-w-40 truncate text-[14.5px] font-semibold text-ink">{name}님</span>}
+        {/* 이름(모바일은 프로필 동그라미)을 누르면 마이페이지 */}
+        <Link
+          href="/mypage"
+          aria-label="마이페이지"
+          className="mr-1 flex items-center gap-2 rounded-full text-[14.5px] font-semibold text-ink hover:opacity-80"
+        >
+          <UserAvatar name={name} src={user?.avatarUrl} className={mobile ? "size-[30px] text-[13px]" : "size-8"} />
+          {!mobile && <span className="max-w-40 truncate">{name}님</span>}
+        </Link>
         <button
           type="button"
           onClick={() => logout.mutate()}
