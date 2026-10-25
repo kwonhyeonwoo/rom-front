@@ -5,11 +5,11 @@ import { ArrowRight, Search } from "lucide-react";
 const quickFilters = [
   { label: "이번 주말", href: "/search?weekend=1" },
   { label: "보수교육 인정", href: "/search?credit=1" },
-  { label: "마감 임박", href: "/search?sort=deadline" },
+  { label: "마감 임박", href: "/search?closingSoon=1" },
   { label: "무료", href: "/search?price=free" },
-  { label: "온라인", href: "/search?region=온라인" },
   { label: "서울", href: "/search?region=서울" },
   { label: "경기", href: "/search?region=경기" },
+  { label: "대구", href: "/search?region=대구" },
 ];
 
 export function HeroSearch() {

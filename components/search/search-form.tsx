@@ -16,7 +16,7 @@ function KeptFilters({ filters }: { filters: SearchFilters }) {
     ["price", filters.price],
     ["weekend", filters.weekend ? "1" : null],
     ["credit", filters.credit ? "1" : null],
-    ["recruiting", filters.recruiting ? "1" : null],
+    ["closingSoon", filters.closingSoon ? "1" : null],
     ["sort", filters.sort === "deadline" ? null : filters.sort],
   ];
   return kept.map(([name, value]) => value && <input key={name} type="hidden" name={name} value={value} />);
