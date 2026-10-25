@@ -24,14 +24,14 @@ export function CeCourseSection() {
   );
 }
 
-// 학회·교육업체 사설 세미나 (보수교육 인정이 아니거나 확인되지 않은 것)
+// 학회·교육업체 사설 세미나 (보수교육 인정이 아니거나 확인되지 않은 것). 신청이 끝난 것은 뺀다
 export function PrivateSeminarSection() {
   return (
     <GridSection
       title="세미나교육"
       description="학회·교육업체가 여는 도수·운동·재활 세미나"
-      href="/search?private=1&sort=date"
-      filters={{ privateOnly: true, sort: "date" }}
+      href="/search?private=1&open=1&sort=date"
+      filters={{ privateOnly: true, openOnly: true, sort: "date" }}
       empty="다가오는 세미나가 없어요."
     />
   );

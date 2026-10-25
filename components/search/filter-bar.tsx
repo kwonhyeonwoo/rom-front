@@ -79,6 +79,7 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
               weekend: false,
               credit: false,
               privateOnly: false,
+              openOnly: false,
               closingSoon: false,
             })
           }
