@@ -11,9 +11,12 @@ import { SectionHeader } from "./section-header";
 const SECTION_SIZE = 4;
 
 export function DeadlineSoonSection() {
-  const { data, status } = useSeminarsQuery({ ...defaultFilters, closingSoon: true, sort: "deadline" }, SECTION_SIZE);
+  const { data, status } = useSeminarsQuery(
+    { ...defaultFilters, closingSoon: true, sort: "deadline" },
+    SECTION_SIZE,
+  );
   const items = data?.items ?? [];
-
+  console.log("data", data);
   return (
     <section className="mt-9 md:mt-[72px]">
       <Container>
@@ -21,7 +24,10 @@ export function DeadlineSoonSection() {
       </Container>
       {items.length === 0 ? (
         <Container>
-          <ListStatus status={status} empty="7일 안에 신청이 마감되는 세미나가 없어요." />
+          <ListStatus
+            status={status}
+            empty="7일 안에 신청이 마감되는 세미나가 없어요."
+          />
         </Container>
       ) : (
         // 모바일은 가로 스크롤, PC는 4열 그리드
@@ -42,7 +48,10 @@ export function DeadlineSoonSection() {
 }
 
 export function NewlyAddedSection() {
-  const { data, status } = useSeminarsQuery({ ...defaultFilters, sort: "latest" }, SECTION_SIZE);
+  const { data, status } = useSeminarsQuery(
+    { ...defaultFilters, sort: "latest" },
+    SECTION_SIZE,
+  );
   const items = data?.items ?? [];
 
   return (

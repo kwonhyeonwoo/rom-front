@@ -3,7 +3,10 @@ import { Container } from "@/components/layout/container";
 import { SiteHeader } from "@/components/layout/site-header";
 import { HeroSearch } from "@/components/home/hero-search";
 import { PromoBanner } from "@/components/home/promo-banner";
-import { DeadlineSoonSection, NewlyAddedSection } from "@/components/home/seminar-sections";
+import {
+  DeadlineSoonSection,
+  NewlyAddedSection,
+} from "@/components/home/seminar-sections";
 import { banners } from "@/lib/seminars";
 
 export default function Home() {
