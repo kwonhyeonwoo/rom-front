@@ -13,8 +13,6 @@ import {
 import { SelectPill, TogglePill, pillClass } from "./filter-pill";
 import { useFilterNavigation } from "./use-filter-navigation";
 
-const asOptions = (values: string[]) => values.map((value) => ({ value, label: value }));
-
 export function FilterBar({ filters }: { filters: SearchFilters }) {
   const navigate = useFilterNavigation(filters);
   // 모바일은 한 줄에 다 안 들어가서 토글 필터를 접어 둔다
@@ -25,9 +23,9 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
       <TogglePill label="주말만" on={filters.weekend} onClick={() => navigate({ weekend: !filters.weekend })} />
       <TogglePill label="보수교육 인정" on={filters.credit} onClick={() => navigate({ credit: !filters.credit })} />
       <TogglePill
-        label="모집 중"
-        on={filters.recruiting}
-        onClick={() => navigate({ recruiting: !filters.recruiting })}
+        label="마감 임박"
+        on={filters.closingSoon}
+        onClick={() => navigate({ closingSoon: !filters.closingSoon })}
       />
     </>
   );
@@ -48,13 +46,13 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
         <SelectPill
           label="지역"
           value={filters.region}
-          options={asOptions(regionOptions)}
+          options={regionOptions}
           onChange={(region) => navigate({ region })}
         />
         <SelectPill
           label="분야"
           value={filters.category}
-          options={asOptions(categoryOptions)}
+          options={categoryOptions}
           onChange={(category) => navigate({ category })}
         />
         <SelectPill label="날짜" value={filters.period} options={periodOptions} onChange={(period) => navigate({ period })} />
@@ -70,7 +68,7 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
               price: null,
               weekend: false,
               credit: false,
-              recruiting: false,
+              closingSoon: false,
             })
           }
           className="ml-2 hidden text-[13.5px] whitespace-nowrap text-faint hover:text-ink md:inline"
