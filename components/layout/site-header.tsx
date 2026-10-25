@@ -40,9 +40,9 @@ export function SiteHeader({
         </div>
         <div className="flex items-center gap-2.5">
           {searchSlot && <div className="mr-2.5">{searchSlot}</div>}
-          <button type="button" aria-label="알림" className="mr-1.5 text-[#555] hover:text-ink">
+          <Link href="/alerts" aria-label="알림" className="mr-1.5 text-[#555] hover:text-ink">
             <Bell size={21} strokeWidth={1.7} />
-          </button>
+          </Link>
           <HeaderAuth />
         </div>
       </Container>
