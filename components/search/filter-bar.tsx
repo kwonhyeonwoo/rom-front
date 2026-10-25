@@ -21,7 +21,17 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
   const toggles = (
     <>
       <TogglePill label="주말만" on={filters.weekend} onClick={() => navigate({ weekend: !filters.weekend })} />
-      <TogglePill label="보수교육 인정" on={filters.credit} onClick={() => navigate({ credit: !filters.credit })} />
+      {/* 보수교육 인정과 사설 세미나는 서로 반대 조건이라 하나만 켠다 */}
+      <TogglePill
+        label="보수교육 인정"
+        on={filters.credit}
+        onClick={() => navigate({ credit: !filters.credit, privateOnly: false })}
+      />
+      <TogglePill
+        label="세미나교육"
+        on={filters.privateOnly}
+        onClick={() => navigate({ privateOnly: !filters.privateOnly, credit: false })}
+      />
       <TogglePill
         label="마감 임박"
         on={filters.closingSoon}
@@ -68,6 +78,7 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
               price: null,
               weekend: false,
               credit: false,
+              privateOnly: false,
               closingSoon: false,
             })
           }

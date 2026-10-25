@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 const tabs = [
   { label: "홈", href: "/", icon: House },
   { label: "검색", href: "/search", icon: Search },
-  { label: "저장", href: "/saved", icon: Bookmark },
+  { label: "저장", href: "/mypage#saved", icon: Bookmark },
   { label: "알림", href: "/alerts", icon: Bell },
-  { label: "마이", href: "/me", icon: User },
+  { label: "마이", href: "/mypage", icon: User },
 ];
 
 export function MobileTabBar() {
@@ -20,7 +20,8 @@ export function MobileTabBar() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-around border-t border-[#EEE] bg-white pt-2 pb-[max(24px,env(safe-area-inset-bottom))] md:hidden">
       {tabs.map(({ label, href, icon: Icon }) => {
-        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        // 저장 탭은 마이페이지의 저장 목록으로 가는 바로가기라 활성 표시는 마이 탭에만 준다
+        const active = href === "/" ? pathname === "/" : !href.includes("#") && pathname.startsWith(href);
         return (
           <Link
             key={href}
