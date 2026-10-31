@@ -78,7 +78,8 @@ export type PostComment = {
   createdAt: string;
 };
 
-export type PostDetail = Post & { comments: PostComment[] };
+// commentsLocked: 면허 인증을 마친 회원이 아니라서 댓글 내용이 내려오지 않았다 (개수는 commentCount)
+export type PostDetail = Post & { comments: PostComment[]; commentsLocked: boolean };
 
 export type PostPage = {
   items: Post[];

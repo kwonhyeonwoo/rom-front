@@ -8,6 +8,7 @@ import { useSaveReviewMutation } from "@/hooks/mutations/review/useSaveReviewMut
 import { apiErrorMessage } from "@/lib/api";
 import { REVIEW_MAX_LENGTH, REVIEW_MIN_LENGTH, type SavedSeminar } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
+import { isVerificationRequired } from "@/lib/verification";
 import { toast } from "@/stores/use-toast-store";
 import { StarRating } from "./star-rating";
 
@@ -35,7 +36,10 @@ export function ReviewForm({ seminar }: { seminar: SavedSeminar }) {
           toast(editing ? "후기를 수정했어요" : "후기를 남겼어요");
           router.push("/reviews");
         },
-        onError: (error) => toast(apiErrorMessage(error, "후기를 저장하지 못했어요. 잠시 후 다시 시도해주세요")),
+        onError: (error) =>
+          isVerificationRequired(error)
+            ? toast("면허 인증 후 후기를 쓸 수 있어요", { label: "인증하기", href: "/verify" })
+            : toast(apiErrorMessage(error, "후기를 저장하지 못했어요. 잠시 후 다시 시도해주세요")),
       },
     );
   }
