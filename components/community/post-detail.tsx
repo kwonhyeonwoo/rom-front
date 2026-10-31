@@ -13,7 +13,12 @@ import { useToggleLikeMutation } from "@/hooks/mutations/community/useToggleLike
 import { usePostQuery } from "@/hooks/queries/community/usePostQuery";
 import { useSession } from "@/hooks/useSession";
 import { ApiError, apiErrorMessage } from "@/lib/api";
-import { COMMENT_MAX, timeAgo, type PostComment, type PostDetail as PostDetailData } from "@/lib/community";
+import {
+  COMMENT_MAX,
+  timeAgo,
+  type PostComment,
+  type PostDetail as PostDetailData,
+} from "@/lib/community";
 import { formatSchedule } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
 import { toast } from "@/stores/use-toast-store";
@@ -24,16 +29,26 @@ export function PostDetail({ postId }: { postId: string }) {
   const session = useSession();
   const post = usePostQuery(postId, Boolean(session));
 
-  if (session === undefined || (session && post.status === "pending")) return <CommunitySkeleton />;
+  if (session === undefined || (session && post.status === "pending"))
+    return <CommunitySkeleton />;
   if (session === null) return <CommunityLoginRequired />;
   if (post.status === "error" || !post.data) {
     const missing = post.error instanceof ApiError && post.error.status === 404;
     return (
       <Container className="flex justify-center py-20 md:py-28">
         <div className="w-full max-w-[380px] text-center">
-          <h1 className="text-xl font-extrabold tracking-[-0.04em]">{missing ? "글을 찾을 수 없어요" : "불러오지 못했어요"}</h1>
-          <p className="mt-2 text-[15px] text-sub">{missing ? "삭제됐거나 없는 글이에요." : "잠시 후 다시 시도해주세요."}</p>
-          <Link href="/community" className="mt-8 flex h-12 items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white">
+          <h1 className="text-xl font-extrabold tracking-[-0.04em]">
+            {missing ? "글을 찾을 수 없어요" : "불러오지 못했어요"}
+          </h1>
+          <p className="mt-2 text-[15px] text-sub">
+            {missing
+              ? "삭제됐거나 없는 글이에요."
+              : "잠시 후 다시 시도해주세요."}
+          </p>
+          <Link
+            href="/community"
+            className="mt-8 flex h-12 items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white"
+          >
             커뮤니티로 가기
           </Link>
         </div>
@@ -56,40 +71,68 @@ function PostView({ post }: { post: PostDetailData }) {
         toast("글을 삭제했어요");
         router.replace("/community");
       },
-      onError: (error) => toast(apiErrorMessage(error, "삭제하지 못했어요. 잠시 후 다시 시도해주세요")),
+      onError: (error) =>
+        toast(
+          apiErrorMessage(
+            error,
+            "삭제하지 못했어요. 잠시 후 다시 시도해주세요",
+          ),
+        ),
     });
   }
 
   return (
     <Container className="max-w-[720px] pt-4 pb-12 md:pt-9">
-      <Link href="/community" className="inline-flex items-center gap-0.5 text-[13.5px] font-semibold text-sub hover:text-ink">
+      <Link
+        href="/community"
+        className="inline-flex items-center gap-0.5 text-[13.5px] font-semibold text-sub hover:text-ink"
+      >
         <ChevronLeft size={16} />
         커뮤니티
       </Link>
 
       <article className="mt-4">
         <BoardTag board={post.board} />
-        <h1 className="mt-2 text-[22px] leading-[1.4] font-extrabold tracking-[-0.04em] md:text-[28px]">{post.title}</h1>
+        <h1 className="mt-2 text-[22px] leading-[1.4] font-extrabold tracking-[-0.04em] md:text-[28px]">
+          {post.title}
+        </h1>
         <div className="mt-3 flex items-center gap-2.5 border-b border-line pb-4">
-          <span className="flex size-9 items-center justify-center rounded-full bg-surface text-sm font-bold text-sub">{post.authorName[0]}</span>
+          <span className="flex size-9 items-center justify-center rounded-full bg-surface text-sm font-bold text-sub">
+            {post.authorName[0]}
+          </span>
           <div className="min-w-0 flex-1">
             <p className="text-[14.5px] font-bold">{post.authorName}</p>
             <p className="text-xs text-faint">
-              {timeAgo(post.createdAt)} · 조회 {post.viewCount.toLocaleString("ko-KR")}
+              {timeAgo(post.createdAt)} · 조회{" "}
+              {post.viewCount.toLocaleString("ko-KR")}
             </p>
           </div>
           {post.mine &&
             (confirming ? (
               <span className="flex items-center gap-2 text-[13px] font-semibold">
-                <button type="button" onClick={deletePost} disabled={remove.isPending} className="text-soon disabled:opacity-50">
+                <button
+                  type="button"
+                  onClick={deletePost}
+                  disabled={remove.isPending}
+                  className="text-soon disabled:opacity-50"
+                >
                   삭제할게요
                 </button>
-                <button type="button" onClick={() => setConfirming(false)} className="text-sub">
+                <button
+                  type="button"
+                  onClick={() => setConfirming(false)}
+                  className="text-sub"
+                >
                   취소
                 </button>
               </span>
             ) : (
-              <button type="button" aria-label="글 삭제" onClick={() => setConfirming(true)} className="p-1.5 text-faint hover:text-ink">
+              <button
+                type="button"
+                aria-label="글 삭제"
+                onClick={() => setConfirming(true)}
+                className="p-1.5 text-faint hover:text-ink"
+              >
                 <Trash2 size={18} />
               </button>
             ))}
@@ -99,9 +142,15 @@ function PostView({ post }: { post: PostDetailData }) {
           <div className="mt-4 flex items-center gap-3 rounded-[14px] bg-surface px-4 py-3.5">
             <Link2 size={16} strokeWidth={2} className="shrink-0 text-sub" />
             <div className="min-w-0">
-              <p className="truncate text-[14.5px] font-bold">{post.seminar.title}</p>
+              <p className="truncate text-[14.5px] font-bold">
+                {post.seminar.title}
+              </p>
               <p className="truncate text-[12.5px] text-sub">
-                {[post.seminar.host, formatSchedule(post.seminar.startDate, post.seminar.endDate), post.seminar.region]
+                {[
+                  post.seminar.host,
+                  formatSchedule(post.seminar.startDate, post.seminar.endDate),
+                  post.seminar.region,
+                ]
                   .filter(Boolean)
                   .join(" · ")}
               </p>
@@ -109,7 +158,9 @@ function PostView({ post }: { post: PostDetailData }) {
           </div>
         )}
 
-        <div className="mt-6 text-[15.5px] leading-[1.85] whitespace-pre-line text-[#222]">{post.content}</div>
+        <div className="mt-6 text-[15.5px] leading-[1.85] whitespace-pre-line text-[#222]">
+          {post.content}
+        </div>
 
         <div className="mt-8 flex justify-center">
           <button
@@ -118,10 +169,16 @@ function PostView({ post }: { post: PostDetailData }) {
             onClick={() => like.mutate(!post.liked)}
             className={cn(
               "inline-flex h-11 items-center gap-1.5 rounded-full border px-5 text-sm font-semibold transition-colors",
-              post.liked ? "border-ink bg-ink text-white" : "border-[#E4E4E4] text-ink hover:border-ink",
+              post.liked
+                ? "border-ink bg-ink text-white"
+                : "border-[#E4E4E4] text-ink hover:border-ink",
             )}
           >
-            <Heart size={16} strokeWidth={2} className={post.liked ? "fill-white" : ""} />
+            <Heart
+              size={16}
+              strokeWidth={2}
+              className={post.liked ? "fill-white" : ""}
+            />
             공감 {post.likeCount}
           </button>
         </div>
@@ -145,7 +202,13 @@ function Comments({ post }: { post: PostDetailData }) {
       { content: content.trim(), anonymous },
       {
         onSuccess: () => setContent(""),
-        onError: (error) => toast(apiErrorMessage(error, "댓글을 남기지 못했어요. 잠시 후 다시 시도해주세요")),
+        onError: (error) =>
+          toast(
+            apiErrorMessage(
+              error,
+              "댓글을 남기지 못했어요. 잠시 후 다시 시도해주세요",
+            ),
+          ),
       },
     );
   }
@@ -169,7 +232,12 @@ function Comments({ post }: { post: PostDetailData }) {
         />
         <div className="mt-2 flex items-center justify-between">
           <label className="flex items-center gap-2 text-[13px] text-sub">
-            <input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} className="size-4 accent-[#0F7B6C]" />
+            <input
+              type="checkbox"
+              checked={anonymous}
+              onChange={(event) => setAnonymous(event.target.checked)}
+              className="size-4 accent-[#0F7B6C]"
+            />
             익명
           </label>
           <button
@@ -184,9 +252,13 @@ function Comments({ post }: { post: PostDetailData }) {
 
       <div className="mt-2">
         {post.comments.length === 0 ? (
-          <p className="py-10 text-center text-[14px] text-sub">첫 댓글을 남겨보세요</p>
+          <p className="py-10 text-center text-[14px] text-sub">
+            첫 댓글을 남겨보세요
+          </p>
         ) : (
-          post.comments.map((comment) => <CommentItem key={comment.id} comment={comment} />)
+          post.comments.map((comment) => (
+            <CommentItem key={comment.id} comment={comment} />
+          ))
         )}
       </div>
     </section>
@@ -204,7 +276,11 @@ function CommentItem({ comment }: { comment: PostComment }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-[13px]">
           <b>{comment.authorName}</b>
-          {comment.byAuthor && <span className="rounded bg-[#E6F2EF] px-1.5 text-[11px] font-bold text-brand">작성자</span>}
+          {comment.byAuthor && (
+            <span className="rounded bg-[#E6F2EF] px-1.5 text-[11px] font-bold text-brand">
+              작성자
+            </span>
+          )}
           <span className="text-faint">{timeAgo(comment.createdAt)}</span>
           {comment.mine && (
             <button
@@ -213,7 +289,13 @@ function CommentItem({ comment }: { comment: PostComment }) {
               disabled={remove.isPending}
               onClick={() =>
                 remove.mutate(comment.id, {
-                  onError: (error) => toast(apiErrorMessage(error, "삭제하지 못했어요. 잠시 후 다시 시도해주세요")),
+                  onError: (error) =>
+                    toast(
+                      apiErrorMessage(
+                        error,
+                        "삭제하지 못했어요. 잠시 후 다시 시도해주세요",
+                      ),
+                    ),
                 })
               }
               className="ml-auto p-1 text-faint hover:text-ink disabled:opacity-50"
@@ -222,7 +304,9 @@ function CommentItem({ comment }: { comment: PostComment }) {
             </button>
           )}
         </div>
-        <p className="mt-1 text-[14.5px] leading-[1.6] whitespace-pre-line">{comment.content}</p>
+        <p className="mt-1 text-[14.5px] leading-[1.6] whitespace-pre-line">
+          {comment.content}
+        </p>
       </div>
     </div>
   );
