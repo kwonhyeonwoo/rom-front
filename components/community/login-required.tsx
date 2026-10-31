@@ -10,14 +10,19 @@ export function CommunityLoginRequired() {
         <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-surface">
           <Users size={22} strokeWidth={2} />
         </span>
-        <h1 className="mt-6 text-2xl font-extrabold tracking-[-0.04em]">로그인이 필요해요</h1>
+        <h1 className="mt-6 text-2xl font-extrabold tracking-[-0.04em]">
+          로그인이 필요해요
+        </h1>
         <p className="mt-2 text-[15px] leading-[1.55] text-sub">
           로그인하면 동료 물리치료사들과
           <br />
           세미나 후기와 임상 이야기를 나눌 수 있어요
         </p>
         <div className="mt-8 flex flex-col gap-2">
-          <Link href="/login" className="flex h-12 items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white">
+          <Link
+            href="/login"
+            className="flex h-12 items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white"
+          >
             로그인
           </Link>
           <Link

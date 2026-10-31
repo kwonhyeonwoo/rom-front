@@ -31,7 +31,9 @@ export function PostForm() {
   const bookmarks = useBookmarksQuery(Boolean(session));
   const create = useCreatePostMutation();
 
-  const [board, setBoard] = useState<Board>(boards.find((b) => b.value === params.get("board"))?.value ?? "FREE");
+  const [board, setBoard] = useState<Board>(
+    boards.find((b) => b.value === params.get("board"))?.value ?? "FREE",
+  );
   const [seminarId, setSeminarId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -41,31 +43,50 @@ export function PostForm() {
   if (session === null) return <CommunityLoginRequired />;
 
   // 후기에 연결할 수 있는 건 내가 저장하고 "들었어요"라고 답한 세미나
-  const attended = (bookmarks.data ?? []).filter((s) => s.attendance === "ATTENDED");
+  const attended = (bookmarks.data ?? []).filter(
+    (s) => s.attendance === "ATTENDED",
+  );
   const selected = attended.find((s) => s.id === seminarId);
   const titleLength = title.trim().length;
   const contentLength = content.trim().length;
-  const valid = titleLength >= 2 && titleLength <= POST_TITLE_MAX && contentLength >= POST_CONTENT_MIN && contentLength <= POST_CONTENT_MAX;
+  const valid =
+    titleLength >= 2 &&
+    titleLength <= POST_TITLE_MAX &&
+    contentLength >= POST_CONTENT_MIN &&
+    contentLength <= POST_CONTENT_MAX;
   const name = user?.name ?? session.user.email ?? null;
 
   function selectBoard(next: Board) {
     setBoard(next);
     if (next !== "REVIEW") setSeminarId(null);
     // 자유 게시판은 익명이 기본이다. 직접 바꾼 선택은 게시판을 옮겨도 그대로 둔다
-    if (next === "FREE" && board !== "FREE" && title === "" && content === "") setAnonymous(true);
+    if (next === "FREE" && board !== "FREE" && title === "" && content === "")
+      setAnonymous(true);
   }
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!valid || create.isPending) return;
     create.mutate(
-      { board, title: title.trim(), content: content.trim(), anonymous, ...(seminarId && { seminarId }) },
+      {
+        board,
+        title: title.trim(),
+        content: content.trim(),
+        anonymous,
+        ...(seminarId && { seminarId }),
+      },
       {
         onSuccess: ({ id }) => {
           toast("글을 올렸어요");
           router.replace(`/community/${id}`);
         },
-        onError: (error) => toast(apiErrorMessage(error, "글을 올리지 못했어요. 잠시 후 다시 시도해주세요")),
+        onError: (error) =>
+          toast(
+            apiErrorMessage(
+              error,
+              "글을 올리지 못했어요. 잠시 후 다시 시도해주세요",
+            ),
+          ),
       },
     );
   }
@@ -79,7 +100,13 @@ export function PostForm() {
           <legend className="text-[15px] font-bold">게시판</legend>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {boards.map((b) => (
-              <button key={b.value} type="button" data-on={board === b.value} onClick={() => selectBoard(b.value)} className={pillClass}>
+              <button
+                key={b.value}
+                type="button"
+                data-on={board === b.value}
+                onClick={() => selectBoard(b.value)}
+                className={pillClass}
+              >
                 {b.label}
               </button>
             ))}
@@ -89,17 +116,25 @@ export function PostForm() {
         {board === "REVIEW" && (
           <div className="mt-7">
             <p className="text-[15px] font-bold">
-              수강한 세미나 연결 <span className="text-[13px] font-medium text-faint">선택</span>
+              수강한 세미나 연결{" "}
+              <span className="text-[13px] font-medium text-faint">선택</span>
             </p>
             {selected ? (
               <div className="mt-3 flex items-center gap-3 rounded-[12px] border-[1.5px] border-ink px-3.5 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14.5px] font-bold">{selected.title}</p>
+                  <p className="truncate text-[14.5px] font-bold">
+                    {selected.title}
+                  </p>
                   <p className="truncate text-[12.5px] text-sub">
                     {selected.host} · {selected.schedule}
                   </p>
                 </div>
-                <button type="button" aria-label="연결 해제" onClick={() => setSeminarId(null)} className="text-faint hover:text-ink">
+                <button
+                  type="button"
+                  aria-label="연결 해제"
+                  onClick={() => setSeminarId(null)}
+                  className="text-faint hover:text-ink"
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -112,7 +147,9 @@ export function PostForm() {
                     onClick={() => setSeminarId(s.id)}
                     className="block w-full border-b border-line px-3.5 py-3 text-left last:border-b-0 hover:bg-surface"
                   >
-                    <p className="truncate text-[14.5px] font-semibold">{s.title}</p>
+                    <p className="truncate text-[14.5px] font-semibold">
+                      {s.title}
+                    </p>
                     <p className="truncate text-[12.5px] text-sub">
                       {s.host} · {s.schedule}
                     </p>
@@ -121,8 +158,12 @@ export function PostForm() {
               </div>
             ) : (
               <p className="mt-3 text-[13.5px] leading-[1.6] text-sub">
-                저장하고 &quot;들었어요&quot;라고 답한 세미나가 있으면 여기서 연결할 수 있어요.{" "}
-                <Link href="/mypage" className="font-semibold text-ink underline underline-offset-2">
+                저장하고 &quot;들었어요&quot;라고 답한 세미나가 있으면 여기서
+                연결할 수 있어요.{" "}
+                <Link
+                  href="/mypage"
+                  className="font-semibold text-ink underline underline-offset-2"
+                >
                   내 저장 목록 보기
                 </Link>
               </p>
@@ -158,13 +199,17 @@ export function PostForm() {
             className="mt-3 w-full resize-y rounded-[14px] border border-[#E1E1E1] p-4 text-[15px] leading-[1.7] outline-none placeholder:text-faint focus:border-ink"
           />
           <p className="mt-1.5 text-right text-[12.5px] text-faint">
-            {contentLength.toLocaleString("ko-KR")} / {POST_CONTENT_MAX.toLocaleString("ko-KR")}
+            {contentLength.toLocaleString("ko-KR")} /{" "}
+            {POST_CONTENT_MAX.toLocaleString("ko-KR")}
           </p>
         </div>
 
         <div className="mt-4 flex items-start gap-2.5 rounded-[12px] bg-[#FFF6E5] px-3.5 py-3 text-[13px] leading-[1.55] text-[#8A5A00]">
           <AlertCircle size={17} strokeWidth={2} className="mt-0.5 shrink-0" />
-          <span>환자 이름, 얼굴, 차트, 영상처럼 누구인지 알 수 있는 정보는 올리지 말아주세요.</span>
+          <span>
+            환자 이름, 얼굴, 차트, 영상처럼 누구인지 알 수 있는 정보는 올리지
+            말아주세요.
+          </span>
         </div>
 
         <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-surface px-4 py-3.5">
@@ -173,7 +218,9 @@ export function PostForm() {
               익명으로 쓰기
             </label>
             <p className="mt-0.5 truncate text-[12.5px] text-sub">
-              다른 사람에게 <b className="text-ink">{previewName(name, anonymous)}</b>로 보여요
+              다른 사람에게{" "}
+              <b className="text-ink">{previewName(name, anonymous)}</b>로
+              보여요
             </p>
           </div>
           <button
@@ -184,7 +231,9 @@ export function PostForm() {
             onClick={() => setAnonymous((value) => !value)}
             className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${anonymous ? "bg-brand" : "bg-[#CFCFCF]"}`}
           >
-            <span className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${anonymous ? "left-[19px]" : "left-[3px]"}`} />
+            <span
+              className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${anonymous ? "left-[19px]" : "left-[3px]"}`}
+            />
           </button>
         </div>
 
