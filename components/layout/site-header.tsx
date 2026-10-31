@@ -11,15 +11,19 @@ const navItems = [
   { label: "보수교육", href: "/search?credit=1" },
   { label: "마감 임박", href: "/search?closingSoon=1" },
   { label: "강사", href: "/instructors" },
+  { label: "커뮤니티", href: "/community" },
 ];
 
 export function SiteHeader({
   searchSlot,
   hideOnMobile = false,
+  activeHref = "/",
 }: {
   // PC 헤더 오른쪽에 넣을 검색창 (검색 결과 페이지에서 사용)
   searchSlot?: React.ReactNode;
   hideOnMobile?: boolean;
+  // 현재 메뉴. 기본은 세미나
+  activeHref?: string;
 }) {
   return (
     <header className="bg-white md:border-b md:border-[#EFEFEF]">
@@ -27,11 +31,11 @@ export function SiteHeader({
         <div className="flex items-center gap-11">
           <Logo />
           <nav className="flex items-center gap-7 text-[15.5px] font-semibold">
-            {navItems.map((item, index) => (
+            {navItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className={cn(index === 0 ? "text-ink" : "text-[#7A7A7A] hover:text-ink")}
+                className={cn(item.href === activeHref ? "text-ink" : "text-[#7A7A7A] hover:text-ink")}
               >
                 {item.label}
               </Link>

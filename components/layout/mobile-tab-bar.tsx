@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Bookmark, House, Search, User } from "lucide-react";
+import { Bookmark, House, Search, User, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { label: "홈", href: "/", icon: House },
   { label: "검색", href: "/search", icon: Search },
+  { label: "커뮤니티", href: "/community", icon: Users },
   { label: "저장", href: "/mypage#saved", icon: Bookmark },
-  { label: "알림", href: "/alerts", icon: Bell },
   { label: "마이", href: "/mypage", icon: User },
 ];
 
