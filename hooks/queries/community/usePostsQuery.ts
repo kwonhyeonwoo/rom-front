@@ -14,6 +14,7 @@ export function usePostsQuery({
   q = "",
   mine = false,
   limit = LIMIT,
+  viewer = "guest",
   enabled,
 }: {
   board: Board | null;
@@ -21,10 +22,12 @@ export function usePostsQuery({
   q?: string;
   mine?: boolean;
   limit?: number;
+  // 로그인한 사용자 id (비회원은 "guest"). 내 글 표시가 달라서 키에 넣는다
+  viewer?: string;
   enabled: boolean;
 }) {
   return useInfiniteQuery({
-    queryKey: ["community", "posts", board, sort, q, mine, limit],
+    queryKey: ["community", "posts", board, sort, q, mine, limit, viewer],
     queryFn: ({ pageParam }) => {
       const params = new URLSearchParams({
         sort,

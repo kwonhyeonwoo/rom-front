@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { PenLine, Star } from "lucide-react";
 
+import { WriteButton } from "@/components/verification/write-button";
 import { SeminarPoster } from "@/components/seminar/seminar-poster";
 import { UserAvatar } from "@/components/layout/user-avatar";
 import { useCommunitySummaryQuery } from "@/hooks/queries/community/useCommunitySummaryQuery";
@@ -87,21 +88,34 @@ export function CommunityNav({
 // PC 오른쪽 패널: 내 정보와 글쓰기, 후기가 많은 세미나, 커뮤니티 약속
 export function CommunityAside({
   writeHref,
-  name,
-  avatarUrl,
+  user,
 }: {
   writeHref: string;
-  name: string;
-  avatarUrl?: string | null;
+  // 비회원이면 null. 내 활동 대신 로그인 안내를 보여준다
+  user: { name: string; avatarUrl?: string | null } | null;
 }) {
-  const { data: summary } = useCommunitySummaryQuery(true);
+  const { data: summary } = useCommunitySummaryQuery(user !== null);
 
   return (
     <aside className="sticky top-6 flex flex-col gap-4">
+      {user === null ? (
+        <div className="rounded-[20px] border border-[#EFEFEF] p-5">
+          <b className="text-[15px]">동료들과 이야기해보세요</b>
+          <p className="mt-1.5 text-[13px] leading-[1.6] text-sub">
+            로그인하고 면허를 인증하면 글과 댓글을 쓸 수 있어요.
+          </p>
+          <Link
+            href="/login"
+            className="mt-4 flex h-11 items-center justify-center rounded-full bg-ink text-[14.5px] font-bold text-white"
+          >
+            로그인
+          </Link>
+        </div>
+      ) : (
       <div className="rounded-[20px] border border-[#EFEFEF] p-5">
         <div className="flex items-center gap-2.5">
-          <UserAvatar name={name} src={avatarUrl} className="size-10" />
-          <p className="min-w-0 truncate text-[15px] font-bold">{name}님</p>
+          <UserAvatar name={user.name} src={user.avatarUrl} className="size-10" />
+          <p className="min-w-0 truncate text-[15px] font-bold">{user.name}님</p>
         </div>
         <div className="mt-4 grid grid-cols-2 text-center text-[13px] text-sub">
           <div>
@@ -117,14 +131,15 @@ export function CommunityAside({
             댓글
           </div>
         </div>
-        <Link
+        <WriteButton
           href={writeHref}
-          className="mt-4 flex h-11 items-center justify-center gap-1.5 rounded-full bg-ink text-[14.5px] font-bold text-white"
+          className="mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-ink text-[14.5px] font-bold text-white"
         >
           <PenLine size={16} strokeWidth={2.2} />
           글쓰기
-        </Link>
+        </WriteButton>
       </div>
+      )}
 
       <div className="rounded-[20px] border border-[#EFEFEF] p-5">
         <div className="flex items-baseline justify-between">

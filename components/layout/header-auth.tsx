@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
+import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { cn } from "@/lib/utils";
+import { VerifyChip } from "@/components/verification/verify-chip";
 import { UserAvatar } from "./user-avatar";
 
 const pillButton = "inline-flex h-10 items-center justify-center rounded-full px-[18px] text-sm font-semibold whitespace-nowrap";
@@ -15,6 +17,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   const session = useSession();
   const { data: user } = useUserQuery(Boolean(session));
   const logout = useLogoutMutation();
+  const { access } = useVerifyAccess();
 
   // 세션 확인 전에는 버튼 자리만 비워 깜빡임을 줄인다
   if (session === undefined) return <div className={mobile ? "h-[34px]" : "h-10"} />;
@@ -23,6 +26,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
     const name = user?.name ?? session.user.email ?? "회원";
     return (
       <div className="flex items-center gap-1.5">
+        <VerifyChip access={access} className={mobile ? "h-6 px-2 text-[11px]" : undefined} />
         {/* 이름(모바일은 프로필 동그라미)을 누르면 마이페이지 */}
         <Link
           href="/mypage"

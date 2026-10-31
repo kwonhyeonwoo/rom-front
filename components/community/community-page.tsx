@@ -20,7 +20,10 @@ import {
 } from "@/hooks/queries/community/usePostsQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
+import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { boardLabel, boards, type Board, type Post } from "@/lib/community";
+import { VerifyBanner } from "@/components/verification/verify-banner";
+import { WriteButton } from "@/components/verification/write-button";
 import { CommunityAside, CommunityNav } from "./community-side";
 import { CommunityLoginRequired, CommunitySkeleton } from "./login-required";
 import { BoardTag, PostItem } from "./post-item";
@@ -38,6 +41,8 @@ export function CommunityPage() {
   const pathname = usePathname();
   const params = useSearchParams();
   const { data: user } = useUserQuery(Boolean(session));
+  const { verification } = useVerifyAccess();
+  const viewer = session ? session.user.id : "guest";
 
   const board =
     boards.find((b) => b.value === params.get("board"))?.value ?? null;
@@ -48,13 +53,15 @@ export function CommunityPage() {
   const mine = params.get("mine") === "1";
   const filtered = board !== null || q !== "" || mine;
 
-  const enabled = Boolean(session);
-  const posts = usePostsQuery({ board, sort, q, mine, enabled });
+  // 글 목록은 비회원도 본다. 세션 확인이 끝난 뒤에 요청한다 ("내가 쓴 글"은 로그인 필요)
+  const enabled = session !== undefined && !(mine && session === null);
+  const posts = usePostsQuery({ board, sort, q, mine, viewer, enabled });
   // 위쪽 인기 글 카드: 지금 인기 있는 글 3개 (필터가 없을 때만 보여준다)
   const hot = usePostsQuery({
     board: null,
     sort: "popular",
     limit: 3,
+    viewer,
     enabled: enabled && !filtered,
   });
 
@@ -81,7 +88,7 @@ export function CommunityPage() {
   );
 
   if (session === undefined) return <CommunitySkeleton />;
-  if (session === null) return <CommunityLoginRequired />;
+  if (session === null && mine) return <CommunityLoginRequired />;
 
   const items = posts.data?.pages.flatMap((page) => page.items) ?? [];
   const hotPosts = hot.data?.pages[0]?.items ?? [];
@@ -89,7 +96,7 @@ export function CommunityPage() {
   const writeHref = board
     ? `/community/write?board=${board}`
     : "/community/write";
-  const name = user?.name ?? session.user.email?.split("@")[0] ?? "회원";
+  const name = user?.name ?? session?.user.email?.split("@")[0] ?? "회원";
 
   return (
     <Container className="pt-6 pb-12 md:pt-11">
@@ -102,6 +109,7 @@ export function CommunityPage() {
         </div>
 
         <div className="mx-auto w-full max-w-[820px] min-w-0 lg:max-w-none">
+          <VerifyBanner verification={verification} />
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h1 className="text-[26px] font-extrabold tracking-[-0.045em] md:text-[30px]">
@@ -113,13 +121,13 @@ export function CommunityPage() {
                   : (current?.hint ?? "동료 물리치료사들과 편하게 이야기해요")}
               </p>
             </div>
-            <Link
+            <WriteButton
               href={writeHref}
               className="hidden h-11 shrink-0 items-center gap-1.5 rounded-full bg-ink px-5 text-[14.5px] font-bold text-white md:inline-flex lg:hidden"
             >
               <PenLine size={16} strokeWidth={2.2} />
               글쓰기
-            </Link>
+            </WriteButton>
           </div>
 
           {/* 모바일·태블릿은 왼쪽 메뉴 대신 게시판 필 */}
@@ -218,20 +226,21 @@ export function CommunityPage() {
         <div className="hidden lg:block">
           <CommunityAside
             writeHref={writeHref}
-            name={name}
-            avatarUrl={user?.avatarUrl}
+            user={session ? { name, avatarUrl: user?.avatarUrl } : null}
           />
         </div>
       </div>
 
       {/* 모바일은 하단 탭바 위에 떠 있는 글쓰기 버튼 */}
-      <Link
-        href={writeHref}
-        className="fixed right-5 bottom-[92px] z-30 inline-flex h-12 items-center gap-1.5 rounded-full bg-ink px-5 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)] md:hidden"
-      >
-        <PenLine size={17} strokeWidth={2.2} />
-        글쓰기
-      </Link>
+      <div className="fixed right-5 bottom-[92px] z-30 md:hidden">
+        <WriteButton
+          href={writeHref}
+          className="inline-flex h-12 items-center gap-1.5 rounded-full bg-ink px-5 text-[15px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.22)]"
+        >
+          <PenLine size={17} strokeWidth={2.2} />
+          글쓰기
+        </WriteButton>
+      </div>
     </Container>
   );
 }
@@ -343,12 +352,12 @@ function Empty({
         {search ? "다른 검색어로 찾아보세요" : "첫 글을 남겨보세요"}
       </p>
       {!search && (
-        <Link
+        <WriteButton
           href={writeHref}
           className="mt-5 inline-flex h-10 items-center rounded-full bg-ink px-5 text-sm font-bold text-white"
         >
           글쓰기
-        </Link>
+        </WriteButton>
       )}
     </div>
   );

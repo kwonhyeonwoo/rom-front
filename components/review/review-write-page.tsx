@@ -6,6 +6,7 @@ import { Container } from "@/components/layout/container";
 import { SeminarPoster } from "@/components/seminar/seminar-poster";
 import { useBookmarksQuery } from "@/hooks/queries/bookmark/useBookmarksQuery";
 import { useSession } from "@/hooks/useSession";
+import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { reviewStage } from "@/lib/reviews";
 import { AttendanceButtons } from "./attendance-buttons";
 import { ReviewForm } from "./review-form";
@@ -15,6 +16,7 @@ import { ReviewsLoginRequired, ReviewsSkeleton } from "./reviews-page";
 export function ReviewWritePage({ seminarId }: { seminarId: string }) {
   const session = useSession();
   const bookmarks = useBookmarksQuery(Boolean(session));
+  const { access } = useVerifyAccess();
 
   if (session === undefined || (session && bookmarks.status === "pending")) return <ReviewsSkeleton />;
   if (session === null) return <ReviewsLoginRequired />;
@@ -64,7 +66,29 @@ export function ReviewWritePage({ seminarId }: { seminarId: string }) {
           <AttendanceButtons seminarId={seminar.id} />
         </div>
       )}
-      {(stage === "write" || stage === "written") && <ReviewForm seminar={seminar} />}
+      {(stage === "write" || stage === "written") &&
+        (access === "APPROVED" || access === "LOADING" ? (
+          <ReviewForm seminar={seminar} />
+        ) : (
+          <div className="mt-8 rounded-[14px] bg-surface p-5">
+            <p className="text-[15px] font-bold">
+              {access === "PENDING" ? "면허 심사가 끝나면 후기를 쓸 수 있어요" : "면허 인증 후 후기를 쓸 수 있어요"}
+            </p>
+            <p className="mt-1 text-[13.5px] leading-[1.55] text-sub">
+              {access === "PENDING"
+                ? "보통 영업일 1일 안에 알려드려요."
+                : "면허를 한 번만 인증하면 후기와 커뮤니티 글을 쓸 수 있어요."}
+            </p>
+            {access !== "PENDING" && (
+              <Link
+                href={access === "GUEST" ? "/login" : "/verify"}
+                className="mt-4 inline-flex h-10 items-center rounded-full bg-ink px-5 text-sm font-bold text-white"
+              >
+                {access === "NONE" || access === "GUEST" ? "면허 인증하기" : "다시 제출하기"}
+              </Link>
+            )}
+          </div>
+        ))}
     </Container>
   );
 }

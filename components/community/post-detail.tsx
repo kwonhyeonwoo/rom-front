@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Heart, Link2, Trash2 } from "lucide-react";
+import { ChevronLeft, Heart, Link2, Lock, Trash2 } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { useAddCommentMutation } from "@/hooks/mutations/community/useAddCommentMutation";
@@ -12,6 +12,7 @@ import { useDeletePostMutation } from "@/hooks/mutations/community/useDeletePost
 import { useToggleLikeMutation } from "@/hooks/mutations/community/useToggleLikeMutation";
 import { usePostQuery } from "@/hooks/queries/community/usePostQuery";
 import { useSession } from "@/hooks/useSession";
+import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { ApiError, apiErrorMessage } from "@/lib/api";
 import {
   COMMENT_MAX,
@@ -20,18 +21,21 @@ import {
   type PostDetail as PostDetailData,
 } from "@/lib/community";
 import { formatSchedule } from "@/lib/seminars";
+import { isVerificationRequired, type VerifyAccess } from "@/lib/verification";
 import { cn } from "@/lib/utils";
 import { toast } from "@/stores/use-toast-store";
-import { CommunityLoginRequired, CommunitySkeleton } from "./login-required";
+import { VerifyBanner } from "@/components/verification/verify-banner";
+import { CommunitySkeleton } from "./login-required";
 import { BoardTag } from "./post-item";
 
 export function PostDetail({ postId }: { postId: string }) {
   const session = useSession();
-  const post = usePostQuery(postId, Boolean(session));
+  const viewer = session ? session.user.id : "guest";
+  // 글 본문은 비회원도 읽는다. 세션 확인이 끝난 뒤에 요청해 토큰 없이 한 번 더 부르지 않는다
+  const post = usePostQuery(postId, viewer, session !== undefined);
 
-  if (session === undefined || (session && post.status === "pending"))
+  if (session === undefined || post.status === "pending")
     return <CommunitySkeleton />;
-  if (session === null) return <CommunityLoginRequired />;
   if (post.status === "error" || !post.data) {
     const missing = post.error instanceof ApiError && post.error.status === 404;
     return (
@@ -56,12 +60,13 @@ export function PostDetail({ postId }: { postId: string }) {
     );
   }
 
-  return <PostView post={post.data} />;
+  return <PostView post={post.data} viewer={viewer} />;
 }
 
-function PostView({ post }: { post: PostDetailData }) {
+function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
   const router = useRouter();
-  const like = useToggleLikeMutation(post.id);
+  const { access, verification } = useVerifyAccess();
+  const like = useToggleLikeMutation(post.id, viewer);
   const remove = useDeletePostMutation();
   const [confirming, setConfirming] = useState(false);
 
@@ -81,6 +86,19 @@ function PostView({ post }: { post: PostDetailData }) {
     });
   }
 
+  // 승인 전에는 공감을 누를 수 없다. 로그인·인증 화면으로 안내한다
+  function toggleLike() {
+    if (access === "APPROVED") return like.mutate(!post.liked);
+    toast(
+      access === "GUEST" ? "로그인하면 공감할 수 있어요" : "면허 인증 후 공감할 수 있어요",
+      access === "GUEST"
+        ? { label: "로그인", href: "/login" }
+        : access === "PENDING"
+          ? undefined
+          : { label: "인증하기", href: "/verify" },
+    );
+  }
+
   return (
     <Container className="max-w-[720px] pt-4 pb-12 md:pt-9">
       <Link
@@ -90,8 +108,11 @@ function PostView({ post }: { post: PostDetailData }) {
         <ChevronLeft size={16} />
         커뮤니티
       </Link>
+      <div className="mt-4">
+        <VerifyBanner verification={verification} />
+      </div>
 
-      <article className="mt-4">
+      <article>
         <BoardTag board={post.board} />
         <h1 className="mt-2 text-[22px] leading-[1.4] font-extrabold tracking-[-0.04em] md:text-[28px]">
           {post.title}
@@ -166,7 +187,7 @@ function PostView({ post }: { post: PostDetailData }) {
           <button
             type="button"
             aria-pressed={post.liked}
-            onClick={() => like.mutate(!post.liked)}
+            onClick={toggleLike}
             className={cn(
               "inline-flex h-11 items-center gap-1.5 rounded-full border px-5 text-sm font-semibold transition-colors",
               post.liked
@@ -184,7 +205,11 @@ function PostView({ post }: { post: PostDetailData }) {
         </div>
       </article>
 
-      <Comments post={post} />
+      {post.commentsLocked ? (
+        <CommentsLocked count={post.commentCount} access={access} />
+      ) : (
+        <Comments post={post} />
+      )}
     </Container>
   );
 }
@@ -204,10 +229,15 @@ function Comments({ post }: { post: PostDetailData }) {
         onSuccess: () => setContent(""),
         onError: (error) =>
           toast(
-            apiErrorMessage(
-              error,
-              "댓글을 남기지 못했어요. 잠시 후 다시 시도해주세요",
-            ),
+            isVerificationRequired(error)
+              ? "면허 인증 후 댓글을 쓸 수 있어요"
+              : apiErrorMessage(
+                  error,
+                  "댓글을 남기지 못했어요. 잠시 후 다시 시도해주세요",
+                ),
+            isVerificationRequired(error)
+              ? { label: "인증하기", href: "/verify" }
+              : undefined,
           ),
       },
     );
@@ -309,5 +339,84 @@ function CommentItem({ comment }: { comment: PostComment }) {
         </p>
       </div>
     </div>
+  );
+}
+
+// 승인 전에는 댓글 내용 대신 개수와 안내만 보인다. 뒤의 흐린 줄은 모양만 보여주는 자리 표시다
+const lockCopy: Partial<
+  Record<VerifyAccess, { title: string; body: string; cta?: { label: string; href: string } }>
+> = {
+  GUEST: {
+    title: "로그인하고 인증하면 댓글을 볼 수 있어요",
+    body: "물리치료사 동료들의 이야기를 읽고 참여해보세요",
+    cta: { label: "로그인", href: "/login" },
+  },
+  NONE: {
+    title: "면허 인증하면 댓글을 볼 수 있어요",
+    body: "물리치료사 동료들의 이야기를 읽고 참여해보세요",
+    cta: { label: "면허 인증하기", href: "/verify" },
+  },
+  PENDING: {
+    title: "심사가 끝나면 댓글이 열려요",
+    body: "보통 영업일 1일 안에 알려드려요",
+  },
+  REJECTED: {
+    title: "재제출 후 승인되면 댓글이 열려요",
+    body: "면허증 사진을 다시 올려주세요",
+    cta: { label: "다시 제출하기", href: "/verify" },
+  },
+};
+
+function CommentsLocked({
+  count,
+  access,
+}: {
+  count: number;
+  access: VerifyAccess;
+}) {
+  const copy = lockCopy[access] ?? lockCopy.NONE!;
+  return (
+    <section className="mt-12" aria-label="댓글">
+      <h2 className="text-[17px] font-extrabold">댓글 {count}</h2>
+      <div className="mt-4 flex items-center gap-2 rounded-[12px] border border-[#EDEDED] bg-[#FAFAF9] px-4 py-4 text-[14.5px] text-[#A8A8A8]">
+        <Lock size={16} className="shrink-0" />
+        인증 후 댓글을 쓸 수 있어요
+      </div>
+      <div
+        aria-hidden
+        className="relative mt-2 h-[150px] overflow-hidden after:absolute after:inset-0 after:bg-gradient-to-b after:from-white/0 after:to-white after:to-85%"
+      >
+        <div className="space-y-4 py-4 opacity-75 blur-[5px] select-none">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex gap-2.5">
+              <span className="size-[30px] shrink-0 rounded-full bg-surface" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-24 rounded bg-surface" />
+                <div className="h-3.5 w-4/5 rounded bg-surface" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="relative z-10 -mt-[70px] flex flex-col items-center pb-2 text-center">
+        <span className="flex size-11 items-center justify-center rounded-full bg-surface text-[#555]">
+          <Lock size={18} />
+        </span>
+        <p className="mt-2 text-[17px] font-extrabold">{copy.title}</p>
+        <p className="mt-1.5 mb-3 text-sm text-sub">{copy.body}</p>
+        {copy.cta ? (
+          <Link
+            href={copy.cta.href}
+            className="inline-flex h-10 items-center rounded-full bg-brand px-[18px] text-sm font-semibold text-white"
+          >
+            {copy.cta.label}
+          </Link>
+        ) : (
+          <span className="inline-flex h-10 items-center rounded-full bg-[#E4E4E2] px-[18px] text-sm font-semibold text-[#9A9A9A]">
+            심사 중이에요
+          </span>
+        )}
+      </div>
+    </section>
   );
 }

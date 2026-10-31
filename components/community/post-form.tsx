@@ -11,6 +11,7 @@ import { useCreatePostMutation } from "@/hooks/mutations/community/useCreatePost
 import { useBookmarksQuery } from "@/hooks/queries/bookmark/useBookmarksQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
+import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { apiErrorMessage } from "@/lib/api";
 import {
   POST_CONTENT_MAX,
@@ -20,6 +21,8 @@ import {
   previewName,
   type Board,
 } from "@/lib/community";
+import { isVerificationRequired } from "@/lib/verification";
+import { VerifyGate } from "@/components/verification/verify-gate";
 import { toast } from "@/stores/use-toast-store";
 import { CommunityLoginRequired, CommunitySkeleton } from "./login-required";
 
@@ -30,6 +33,7 @@ export function PostForm() {
   const { data: user } = useUserQuery(Boolean(session));
   const bookmarks = useBookmarksQuery(Boolean(session));
   const create = useCreatePostMutation();
+  const { access, verification } = useVerifyAccess();
 
   const [board, setBoard] = useState<Board>(
     boards.find((b) => b.value === params.get("board"))?.value ?? "FREE",
@@ -41,6 +45,9 @@ export function PostForm() {
 
   if (session === undefined) return <CommunitySkeleton />;
   if (session === null) return <CommunityLoginRequired />;
+  if (access === "LOADING") return <CommunitySkeleton />;
+  // 글쓰기는 면허 인증을 마친 회원만. 서버도 한 번 더 막는다
+  if (access !== "APPROVED") return <VerifyGate access={access} verification={verification} />;
 
   // 후기에 연결할 수 있는 건 내가 저장하고 "들었어요"라고 답한 세미나
   const attended = (bookmarks.data ?? []).filter(
@@ -82,10 +89,15 @@ export function PostForm() {
         },
         onError: (error) =>
           toast(
-            apiErrorMessage(
-              error,
-              "글을 올리지 못했어요. 잠시 후 다시 시도해주세요",
-            ),
+            isVerificationRequired(error)
+              ? "면허 인증 후 글을 쓸 수 있어요"
+              : apiErrorMessage(
+                  error,
+                  "글을 올리지 못했어요. 잠시 후 다시 시도해주세요",
+                ),
+            isVerificationRequired(error)
+              ? { label: "인증하기", href: "/verify" }
+              : undefined,
           ),
       },
     );
