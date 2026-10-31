@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -8,7 +10,10 @@ export default function MainLayout({ children }: LayoutProps<"/">) {
     <div className="flex flex-1 flex-col pb-[76px] md:pb-0">
       <div className="flex-1">{children}</div>
       <SiteFooter />
-      <MobileTabBar />
+      {/* 경로에 값이 들어가는 페이지(/reviews/[seminarId])에서 현재 경로를 읽는 동안 나머지 화면이 막히지 않게 한다 */}
+      <Suspense>
+        <MobileTabBar />
+      </Suspense>
     </div>
   );
 }

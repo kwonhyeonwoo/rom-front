@@ -25,3 +25,15 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   if (!res.ok) throw new ApiError(res.status, await res.text());
   return res.json() as Promise<T>;
 }
+
+// rom-back 오류 응답({ message })에서 사용자에게 보여줄 문구를 꺼낸다
+export function apiErrorMessage(error: unknown, fallback: string) {
+  if (!(error instanceof ApiError)) return fallback;
+  try {
+    const { message } = JSON.parse(error.message) as { message?: string | string[] };
+    const text = Array.isArray(message) ? message[0] : message;
+    return text || fallback;
+  } catch {
+    return fallback;
+  }
+}

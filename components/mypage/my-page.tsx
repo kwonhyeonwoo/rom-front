@@ -7,6 +7,7 @@ import { Bell, Bookmark, ChevronRight, LogOut, MessageSquareText } from "lucide-
 import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
 import { UserAvatar } from "@/components/layout/user-avatar";
+import { ReviewAction } from "@/components/review/review-action";
 import { TogglePill } from "@/components/search/filter-pill";
 import { ListStatus } from "@/components/seminar/list-status";
 import { SeminarCard } from "@/components/seminar/seminar-card";
@@ -16,7 +17,7 @@ import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
 import { useBookmarksQuery } from "@/hooks/queries/bookmark/useBookmarksQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
-import type { Seminar } from "@/lib/seminars";
+import { reviewStage, type SavedSeminar } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
 
 const providerLabels: Record<string, string> = {
@@ -27,8 +28,8 @@ const providerLabels: Record<string, string> = {
 
 const tabs = [
   { value: "all", label: "전체", match: () => true },
-  { value: "soon", label: "마감 임박", match: (s: Seminar) => s.closingSoon },
-  { value: "ce", label: "보수교육", match: (s: Seminar) => s.ceRecognized || s.credit !== null },
+  { value: "soon", label: "마감 임박", match: (s: SavedSeminar) => s.closingSoon },
+  { value: "ce", label: "보수교육", match: (s: SavedSeminar) => s.ceRecognized || s.credit !== null },
 ] as const;
 
 export function MyPage() {
@@ -45,10 +46,13 @@ export function MyPage() {
   const provider = user?.provider ?? session.user.app_metadata.provider ?? null;
   const items = bookmarks.data ?? [];
 
+  // 끝난 세미나 중 수강 확인이나 후기가 남은 것
+  const reviewsWaiting = items.filter((s) => ["ask", "write"].includes(reviewStage(s))).length;
+
   const menu = [
     { label: "저장한 세미나", icon: Bookmark, href: "#saved", badge: String(items.length) },
     { label: "알림 조건", icon: Bell, href: "/alerts", badge: "준비 중" },
-    { label: "수강 후기", icon: MessageSquareText, href: "/reviews", badge: "준비 중" },
+    { label: "수강 후기", icon: MessageSquareText, href: "/reviews", badge: reviewsWaiting > 0 ? `${reviewsWaiting}개 대기` : "" },
   ];
 
   return (
@@ -104,7 +108,7 @@ export function MyPage() {
   );
 }
 
-function Stats({ items, loading }: { items: Seminar[]; loading: boolean }) {
+function Stats({ items, loading }: { items: SavedSeminar[]; loading: boolean }) {
   const stats = [
     { label: "저장한 세미나", value: items.length, className: "text-ink" },
     { label: "마감 임박", value: items.filter(tabs[1].match).length, className: "text-soon" },
@@ -129,7 +133,7 @@ function Stats({ items, loading }: { items: Seminar[]; loading: boolean }) {
   );
 }
 
-function SavedSeminars({ status, items }: { status: "pending" | "error" | "success"; items: Seminar[] }) {
+function SavedSeminars({ status, items }: { status: "pending" | "error" | "success"; items: SavedSeminar[] }) {
   const [tab, setTab] = useState<(typeof tabs)[number]["value"]>("all");
   const visible = items.filter(tabs.find((t) => t.value === tab)!.match);
 
@@ -164,12 +168,18 @@ function SavedSeminars({ status, items }: { status: "pending" | "error" | "succe
         <>
           <div className="mt-7 hidden grid-cols-3 gap-x-6 gap-y-10 md:grid">
             {visible.map((seminar) => (
-              <SeminarCard key={seminar.id} seminar={seminar} />
+              <div key={seminar.id}>
+                <SeminarCard seminar={seminar} />
+                <ReviewAction seminar={seminar} />
+              </div>
             ))}
           </div>
           <div className="mt-2 md:hidden">
             {visible.map((seminar) => (
-              <SeminarListItem key={seminar.id} seminar={seminar} />
+              <div key={seminar.id} className="border-b border-line pb-4 last:border-b-0">
+                <SeminarListItem seminar={seminar} className="border-b-0 pb-0" />
+                <ReviewAction seminar={seminar} />
+              </div>
             ))}
           </div>
         </>

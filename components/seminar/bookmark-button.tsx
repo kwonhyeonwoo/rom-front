@@ -4,7 +4,7 @@ import { Bookmark } from "lucide-react";
 
 import { useToggleBookmarkMutation } from "@/hooks/mutations/bookmark/useToggleBookmarkMutation";
 import { useBookmarkIdsQuery } from "@/hooks/queries/bookmark/useBookmarkIdsQuery";
-import { ApiError } from "@/lib/api";
+import { ApiError, apiErrorMessage } from "@/lib/api";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "@/stores/use-toast-store";
@@ -40,7 +40,9 @@ export function BookmarkButton({
         onError: (error) =>
           error instanceof ApiError && error.status === 401
             ? toast("로그인이 만료됐어요. 다시 로그인해주세요", LOGIN_ACTION)
-            : toast("저장하지 못했어요. 잠시 후 다시 시도해주세요"),
+            : error instanceof ApiError && error.status === 409
+              ? toast(apiErrorMessage(error, "저장을 뺄 수 없어요"))
+              : toast("저장하지 못했어요. 잠시 후 다시 시도해주세요"),
       },
     );
   }
