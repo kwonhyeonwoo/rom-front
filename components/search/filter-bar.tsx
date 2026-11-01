@@ -33,6 +33,11 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
         onClick={() => navigate({ privateOnly: !filters.privateOnly, credit: false })}
       />
       <TogglePill
+        label="민간교육"
+        on={filters.privateEdu}
+        onClick={() => navigate({ privateEdu: !filters.privateEdu })}
+      />
+      <TogglePill
         label="마감 임박"
         on={filters.closingSoon}
         onClick={() => navigate({ closingSoon: !filters.closingSoon })}
@@ -79,6 +84,7 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
               weekend: false,
               credit: false,
               privateOnly: false,
+              privateEdu: false,
               openOnly: false,
               closingSoon: false,
             })

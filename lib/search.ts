@@ -1,5 +1,8 @@
 export const PAGE_SIZE = 12;
 
+// 민간교육 수집 출처 (rom-back의 수집기 source 값). 새 민간교육 사이트를 붙이면 여기에 추가한다
+export const PRIVATE_EDU_SOURCES = ["ncma"];
+
 // rom-back이 받는 표준 지역·분야 이름 (src/crawler/normalize/vocab.ts). 목록에 없는 값을 보내면 400이 난다.
 export const regionOptions = [
   "서울",
@@ -57,6 +60,8 @@ export type SearchFilters = {
   credit: boolean;
   // 보수교육 인정이 아닌 사설 세미나만
   privateOnly: boolean;
+  // 민간교육 출처(PRIVATE_EDU_SOURCES)에서 수집한 교육만
+  privateEdu: boolean;
   // 신청이 끝난 세미나 빼기
   openOnly: boolean;
   closingSoon: boolean;
@@ -81,6 +86,7 @@ export function parseFilters(params: RawParams): SearchFilters {
     weekend: first(params.weekend) === "1",
     credit: first(params.credit) === "1",
     privateOnly: first(params.private) === "1",
+    privateEdu: first(params.edu) === "1",
     openOnly: first(params.open) === "1",
     closingSoon: first(params.closingSoon) === "1",
     sort: (pick(sortOptions, first(params.sort)) ?? "deadline") as SearchFilters["sort"],
@@ -99,6 +105,7 @@ export function toQueryString(filters: SearchFilters) {
   if (filters.weekend) params.set("weekend", "1");
   if (filters.credit) params.set("credit", "1");
   if (filters.privateOnly) params.set("private", "1");
+  if (filters.privateEdu) params.set("edu", "1");
   if (filters.openOnly) params.set("open", "1");
   if (filters.closingSoon) params.set("closingSoon", "1");
   if (filters.sort !== "deadline") params.set("sort", filters.sort);
@@ -116,6 +123,7 @@ export function toApiQuery(filters: SearchFilters, limit = PAGE_SIZE) {
   if (filters.weekend) params.set("weekend", "true");
   if (filters.credit) params.set("ceOnly", "true");
   if (filters.privateOnly) params.set("excludeCe", "true");
+  if (filters.privateEdu) params.set("source", PRIVATE_EDU_SOURCES.join(","));
   if (filters.openOnly) params.set("excludeClosed", "true");
   if (filters.closingSoon) params.set("closingSoon", "true");
 
