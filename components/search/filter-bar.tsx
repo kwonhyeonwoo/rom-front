@@ -20,22 +20,36 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
 
   const toggles = (
     <>
-      <TogglePill label="주말만" on={filters.weekend} onClick={() => navigate({ weekend: !filters.weekend })} />
+      <TogglePill
+        label="주말만"
+        on={filters.weekend}
+        onClick={() => navigate({ weekend: !filters.weekend })}
+      />
       {/* 보수교육 인정과 사설 세미나는 서로 반대 조건이라 하나만 켠다 */}
       <TogglePill
         label="보수교육 인정"
         on={filters.credit}
-        onClick={() => navigate({ credit: !filters.credit, privateOnly: false })}
+        onClick={() =>
+          navigate({ credit: !filters.credit, privateOnly: false })
+        }
       />
       <TogglePill
         label="세미나교육"
         on={filters.privateOnly}
-        onClick={() => navigate({ privateOnly: !filters.privateOnly, credit: false })}
+        onClick={() =>
+          navigate({ privateOnly: !filters.privateOnly, credit: false })
+        }
       />
       <TogglePill
         label="민간교육"
         on={filters.privateEdu}
-        onClick={() => navigate({ privateEdu: !filters.privateEdu })}
+        // 민간교육은 지난 교육까지 전체를 보여 준다
+        onClick={() =>
+          navigate({
+            privateEdu: !filters.privateEdu,
+            includePast: !filters.privateEdu,
+          })
+        }
       />
       <TogglePill
         label="마감 임박"
@@ -70,8 +84,18 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
           options={categoryOptions}
           onChange={(category) => navigate({ category })}
         />
-        <SelectPill label="날짜" value={filters.period} options={periodOptions} onChange={(period) => navigate({ period })} />
-        <SelectPill label="가격" value={filters.price} options={priceOptions} onChange={(price) => navigate({ price })} />
+        <SelectPill
+          label="날짜"
+          value={filters.period}
+          options={periodOptions}
+          onChange={(period) => navigate({ period })}
+        />
+        <SelectPill
+          label="가격"
+          value={filters.price}
+          options={priceOptions}
+          onChange={(price) => navigate({ price })}
+        />
         <div className="hidden items-center gap-2 md:flex">{toggles}</div>
         <button
           type="button"
@@ -85,6 +109,7 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
               credit: false,
               privateOnly: false,
               privateEdu: false,
+              includePast: false,
               openOnly: false,
               closingSoon: false,
             })
@@ -94,7 +119,9 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
           초기화
         </button>
       </div>
-      {showToggles && <div className="mt-2 flex flex-wrap gap-[7px] md:hidden">{toggles}</div>}
+      {showToggles && (
+        <div className="mt-2 flex flex-wrap gap-[7px] md:hidden">{toggles}</div>
+      )}
     </div>
   );
 }

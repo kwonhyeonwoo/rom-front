@@ -3,14 +3,18 @@
 import { Container } from "@/components/layout/container";
 import { SeminarCard } from "@/components/seminar/seminar-card";
 import { SeminarListItem } from "@/components/seminar/seminar-list-item";
-import { SeminarCardSkeleton, SeminarListItemSkeleton, SkeletonList } from "@/components/seminar/seminar-skeleton";
+import {
+  SeminarCardSkeleton,
+  SeminarListItemSkeleton,
+  SkeletonList,
+} from "@/components/seminar/seminar-skeleton";
 import { ListStatus } from "@/components/seminar/list-status";
 import { useSeminarsQuery } from "@/hooks/queries/seminar/useSeminarsQuery";
 import { defaultFilters, type SearchFilters } from "@/lib/search";
 import { SectionHeader } from "./section-header";
 
 const SECTION_SIZE = 4;
-const PRIVATE_SECTION_SIZE = 8;
+const PRIVATE_SECTION_SIZE = 12;
 
 // 보수교육 인정 교육. 교육일이 가까운 순
 export function CeCourseSection() {
@@ -25,16 +29,16 @@ export function CeCourseSection() {
   );
 }
 
-// 민간교육: 민간교육 사이트(예: 신경조절움직임학회)에서 수집한 교육·자격과정.
-// 메인 한 곳을 채우도록 8건(PC 2줄)을 보여 주고, 신청이 끝난 것은 뺀다
+// 민간교육: 민간교육 사이트(예: 신경조절움직임학회)에서 수집한 교육·자격과정 전체.
+// 지난 교육도 포함해 최근 교육일 순으로 보여 주고, 전체 목록은 더보기에서 본다
 export function PrivateEducationSection() {
   return (
     <GridSection
       title="민간교육"
       description="교육업체·학회가 직접 여는 민간 교육과 자격과정"
-      href="/search?edu=1&open=1&sort=date"
-      filters={{ privateEdu: true, openOnly: true, sort: "date" }}
-      empty="다가오는 민간교육이 없어요."
+      href="/search?edu=1&past=1&sort=dateDesc"
+      filters={{ privateEdu: true, includePast: true, sort: "dateDesc" }}
+      empty="수집된 민간교육이 아직 없어요."
       size={PRIVATE_SECTION_SIZE}
     />
   );
@@ -56,7 +60,10 @@ function GridSection({
   empty: string;
   size?: number;
 }) {
-  const { data, status } = useSeminarsQuery({ ...defaultFilters, ...filters }, size);
+  const { data, status } = useSeminarsQuery(
+    { ...defaultFilters, ...filters },
+    size,
+  );
   const items = data?.items ?? [];
 
   return (
@@ -65,10 +72,16 @@ function GridSection({
       {status === "pending" ? (
         <>
           <div className="hidden grid-cols-4 gap-x-6 gap-y-10 md:grid">
-            <SkeletonList count={size} render={(index) => <SeminarCardSkeleton key={index} />} />
+            <SkeletonList
+              count={size}
+              render={(index) => <SeminarCardSkeleton key={index} />}
+            />
           </div>
           <div className="-mt-4 md:hidden">
-            <SkeletonList count={3} render={(index) => <SeminarListItemSkeleton key={index} />} />
+            <SkeletonList
+              count={3}
+              render={(index) => <SeminarListItemSkeleton key={index} />}
+            />
           </div>
         </>
       ) : items.length === 0 ? (
