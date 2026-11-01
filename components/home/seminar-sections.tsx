@@ -25,15 +25,15 @@ export function CeCourseSection() {
   );
 }
 
-// 민간교육(학회·교육업체가 여는 사설 교육·자격과정). 메인 한 곳을 채우도록 8건(PC 2줄)을 보여 준다.
-// 신청이 끝난 것은 뺀다
+// 민간교육: 민간교육 사이트(예: 신경조절움직임학회)에서 수집한 교육·자격과정.
+// 메인 한 곳을 채우도록 8건(PC 2줄)을 보여 주고, 신청이 끝난 것은 뺀다
 export function PrivateEducationSection() {
   return (
     <GridSection
       title="민간교육"
-      description="학회·교육업체가 여는 도수·운동·재활 교육과 민간자격 과정"
-      href="/search?private=1&open=1&sort=date"
-      filters={{ privateOnly: true, openOnly: true, sort: "date" }}
+      description="교육업체·학회가 직접 여는 민간 교육과 자격과정"
+      href="/search?edu=1&open=1&sort=date"
+      filters={{ privateEdu: true, openOnly: true, sort: "date" }}
       empty="다가오는 민간교육이 없어요."
       size={PRIVATE_SECTION_SIZE}
     />
