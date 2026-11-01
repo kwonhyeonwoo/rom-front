@@ -10,6 +10,7 @@ import { defaultFilters, type SearchFilters } from "@/lib/search";
 import { SectionHeader } from "./section-header";
 
 const SECTION_SIZE = 4;
+const PRIVATE_SECTION_SIZE = 8;
 
 // 보수교육 인정 교육. 교육일이 가까운 순
 export function CeCourseSection() {
@@ -24,15 +25,17 @@ export function CeCourseSection() {
   );
 }
 
-// 학회·교육업체 사설 세미나 (보수교육 인정이 아니거나 확인되지 않은 것). 신청이 끝난 것은 뺀다
-export function PrivateSeminarSection() {
+// 민간교육(학회·교육업체가 여는 사설 교육·자격과정). 메인 한 곳을 채우도록 8건(PC 2줄)을 보여 준다.
+// 신청이 끝난 것은 뺀다
+export function PrivateEducationSection() {
   return (
     <GridSection
-      title="세미나교육"
-      description="학회·교육업체가 여는 도수·운동·재활 세미나"
+      title="민간교육"
+      description="학회·교육업체가 여는 도수·운동·재활 교육과 민간자격 과정"
       href="/search?private=1&open=1&sort=date"
       filters={{ privateOnly: true, openOnly: true, sort: "date" }}
-      empty="다가오는 세미나가 없어요."
+      empty="다가오는 민간교육이 없어요."
+      size={PRIVATE_SECTION_SIZE}
     />
   );
 }
@@ -44,14 +47,16 @@ function GridSection({
   href,
   filters,
   empty,
+  size = SECTION_SIZE,
 }: {
   title: string;
   description: string;
   href: string;
   filters: Partial<SearchFilters>;
   empty: string;
+  size?: number;
 }) {
-  const { data, status } = useSeminarsQuery({ ...defaultFilters, ...filters }, SECTION_SIZE);
+  const { data, status } = useSeminarsQuery({ ...defaultFilters, ...filters }, size);
   const items = data?.items ?? [];
 
   return (
@@ -59,8 +64,8 @@ function GridSection({
       <SectionHeader title={title} description={description} href={href} />
       {status === "pending" ? (
         <>
-          <div className="hidden grid-cols-4 gap-6 md:grid">
-            <SkeletonList count={SECTION_SIZE} render={(index) => <SeminarCardSkeleton key={index} />} />
+          <div className="hidden grid-cols-4 gap-x-6 gap-y-10 md:grid">
+            <SkeletonList count={size} render={(index) => <SeminarCardSkeleton key={index} />} />
           </div>
           <div className="-mt-4 md:hidden">
             <SkeletonList count={3} render={(index) => <SeminarListItemSkeleton key={index} />} />
@@ -70,7 +75,7 @@ function GridSection({
         <ListStatus status={status} empty={empty} />
       ) : (
         <>
-          <div className="hidden grid-cols-4 gap-6 md:grid">
+          <div className="hidden grid-cols-4 gap-x-6 gap-y-10 md:grid">
             {items.map((seminar) => (
               <SeminarCard key={seminar.id} seminar={seminar} />
             ))}
@@ -83,51 +88,5 @@ function GridSection({
         </>
       )}
     </Container>
-  );
-}
-
-export function DeadlineSoonSection() {
-  const { data, status } = useSeminarsQuery({ ...defaultFilters, closingSoon: true, sort: "deadline" }, SECTION_SIZE);
-  const items = data?.items ?? [];
-  const row =
-    "flex snap-x scroll-px-5 gap-3.5 overflow-x-auto px-5 [scrollbar-width:none] md:mx-auto md:grid md:max-w-[1240px] md:grid-cols-4 md:gap-6 md:overflow-visible";
-
-  return (
-    <section className="mt-[38px] md:mt-[72px]">
-      <Container>
-        <SectionHeader title="마감 임박" description="7일 안에 신청이 마감돼요" href="/search?closingSoon=1" />
-      </Container>
-      {status === "pending" ? (
-        <div className={row}>
-          <SkeletonList
-            count={SECTION_SIZE}
-            render={(index) => (
-              <SeminarCardSkeleton
-                key={index}
-                className="w-[238px] shrink-0 md:w-auto"
-                thumbClassName="h-[186px] md:h-[220px]"
-              />
-            )}
-          />
-        </div>
-      ) : items.length === 0 ? (
-        <Container>
-          <ListStatus status={status} empty="7일 안에 신청이 마감되는 세미나가 없어요." />
-        </Container>
-      ) : (
-        // 모바일은 가로 스크롤, PC는 4열 그리드
-        <div className={row}>
-          {items.map((seminar) => (
-            <SeminarCard
-              key={seminar.id}
-              seminar={seminar}
-              className="w-[238px] shrink-0 snap-start md:w-auto"
-              thumbClassName="h-[186px] md:h-[220px]"
-              posterClassName="max-md:scale-[0.83]"
-            />
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
