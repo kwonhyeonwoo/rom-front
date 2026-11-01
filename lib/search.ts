@@ -48,6 +48,7 @@ export const sortOptions = [
   { value: "deadline", label: "마감 임박순" },
   { value: "latest", label: "최신순" },
   { value: "date", label: "교육일 빠른순" },
+  { value: "dateDesc", label: "교육일 최신순" },
 ] as const;
 
 export type SearchFilters = {
@@ -62,6 +63,8 @@ export type SearchFilters = {
   privateOnly: boolean;
   // 민간교육 출처(PRIVATE_EDU_SOURCES)에서 수집한 교육만
   privateEdu: boolean;
+  // 이미 끝난 교육도 포함 (기본은 숨김)
+  includePast: boolean;
   // 신청이 끝난 세미나 빼기
   openOnly: boolean;
   closingSoon: boolean;
@@ -71,9 +74,12 @@ export type SearchFilters = {
 
 type RawParams = Record<string, string | string[] | undefined>;
 
-const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
-const pick = (options: readonly { value: string }[], value: string | undefined) =>
-  options.find((option) => option.value === value)?.value ?? null;
+const first = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+const pick = (
+  options: readonly { value: string }[],
+  value: string | undefined,
+) => options.find((option) => option.value === value)?.value ?? null;
 
 export function parseFilters(params: RawParams): SearchFilters {
   const page = Number(first(params.page));
@@ -87,9 +93,11 @@ export function parseFilters(params: RawParams): SearchFilters {
     credit: first(params.credit) === "1",
     privateOnly: first(params.private) === "1",
     privateEdu: first(params.edu) === "1",
+    includePast: first(params.past) === "1",
     openOnly: first(params.open) === "1",
     closingSoon: first(params.closingSoon) === "1",
-    sort: (pick(sortOptions, first(params.sort)) ?? "deadline") as SearchFilters["sort"],
+    sort: (pick(sortOptions, first(params.sort)) ??
+      "deadline") as SearchFilters["sort"],
     page: Number.isInteger(page) && page > 0 ? page : 1,
   };
 }
@@ -106,6 +114,7 @@ export function toQueryString(filters: SearchFilters) {
   if (filters.credit) params.set("credit", "1");
   if (filters.privateOnly) params.set("private", "1");
   if (filters.privateEdu) params.set("edu", "1");
+  if (filters.includePast) params.set("past", "1");
   if (filters.openOnly) params.set("open", "1");
   if (filters.closingSoon) params.set("closingSoon", "1");
   if (filters.sort !== "deadline") params.set("sort", filters.sort);
@@ -116,7 +125,11 @@ export function toQueryString(filters: SearchFilters) {
 
 // 화면 필터를 rom-back GET /seminars 쿼리로 바꾼다
 export function toApiQuery(filters: SearchFilters, limit = PAGE_SIZE) {
-  const params = new URLSearchParams({ sort: filters.sort, page: String(filters.page), limit: String(limit) });
+  const params = new URLSearchParams({
+    sort: filters.sort,
+    page: String(filters.page),
+    limit: String(limit),
+  });
   if (filters.q) params.set("q", filters.q);
   if (filters.region) params.set("region", filters.region);
   if (filters.category) params.set("category", filters.category);
@@ -124,6 +137,7 @@ export function toApiQuery(filters: SearchFilters, limit = PAGE_SIZE) {
   if (filters.credit) params.set("ceOnly", "true");
   if (filters.privateOnly) params.set("excludeCe", "true");
   if (filters.privateEdu) params.set("source", PRIVATE_EDU_SOURCES.join(","));
+  if (filters.includePast) params.set("includePast", "true");
   if (filters.openOnly) params.set("excludeClosed", "true");
   if (filters.closingSoon) params.set("closingSoon", "true");
 
@@ -131,7 +145,9 @@ export function toApiQuery(filters: SearchFilters, limit = PAGE_SIZE) {
   if (price?.min !== undefined) params.set("minPrice", String(price.min));
   if (price?.max !== undefined) params.set("maxPrice", String(price.max));
 
-  const period = periodOptions.find((option) => option.value === filters.period);
+  const period = periodOptions.find(
+    (option) => option.value === filters.period,
+  );
   if (period) {
     params.set("from", kstDate(0));
     params.set("to", kstDate(period.days));
@@ -141,7 +157,9 @@ export function toApiQuery(filters: SearchFilters, limit = PAGE_SIZE) {
 
 // 오늘(한국 날짜)부터 days일 뒤를 YYYY-MM-DD로
 function kstDate(days: number) {
-  return new Date(Date.now() + 9 * 3_600_000 + days * 86_400_000).toISOString().slice(0, 10);
+  return new Date(Date.now() + 9 * 3_600_000 + days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
 }
 
 export const defaultFilters: SearchFilters = parseFilters({});
