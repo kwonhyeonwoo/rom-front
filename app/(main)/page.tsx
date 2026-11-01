@@ -3,7 +3,7 @@ import { Container } from "@/components/layout/container";
 import { SiteHeader } from "@/components/layout/site-header";
 import { HeroSearch } from "@/components/home/hero-search";
 import { PromoBanner } from "@/components/home/promo-banner";
-import { CeCourseSection, DeadlineSoonSection, PrivateSeminarSection } from "@/components/home/seminar-sections";
+import { CeCourseSection, PrivateEducationSection } from "@/components/home/seminar-sections";
 import { banners } from "@/lib/seminars";
 
 export default function Home() {
@@ -18,8 +18,7 @@ export default function Home() {
         </Container>
 
         <CeCourseSection />
-        <PrivateSeminarSection />
-        <DeadlineSoonSection />
+        <PrivateEducationSection />
 
         <Container className="mt-[18px] mb-[30px] md:mt-20 md:mb-0">
           <AlertCta
