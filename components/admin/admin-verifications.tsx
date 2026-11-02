@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, Copy, ImageOff, RotateCw, ShieldAlert, X, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, Copy, ImageOff, RotateCw, X, ZoomIn, ZoomOut } from "lucide-react";
 
-import { CommunityLoginRequired } from "@/components/community/login-required";
+import { AdminLogin } from "@/components/admin/admin-login";
 import { Container } from "@/components/layout/container";
 import { useReviewVerificationMutation } from "@/hooks/mutations/verification/useReviewVerificationMutation";
 import { useAdminVerificationQuery } from "@/hooks/queries/verification/useAdminVerificationQuery";
 import { useAdminVerificationsQuery } from "@/hooks/queries/verification/useAdminVerificationsQuery";
-import { useSession } from "@/hooks/useSession";
 import {
   REJECT_REASON_MAX,
   REJECT_REASON_MIN,
@@ -18,6 +17,7 @@ import {
   type AdminVerificationItem,
   type ReviewStatus,
 } from "@/lib/admin-verification";
+import { clearAdminToken, useAdminToken } from "@/lib/admin-session";
 import { apiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { formatRequestedAt } from "@/lib/verification";
@@ -29,18 +29,15 @@ const statusChip: Record<ReviewStatus, { label: string; className: string }> = {
   REJECTED: { label: "반려", className: "bg-[#FDECEA] text-soon" },
 };
 
-const isForbidden = (error: unknown) => error instanceof Error && "status" in error && error.status === 403;
-
-// 관리자(rom-back ADMIN_USER_IDS)가 면허 인증 요청을 보고 승인·반려하는 화면
+// 관리자 전용 아이디·비밀번호로 로그인해 면허 인증 요청을 보고 승인·반려하는 화면
 export function AdminVerifications() {
-  const session = useSession();
+  const token = useAdminToken();
   const [tab, setTab] = useState<ReviewStatus>("PENDING");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const list = useAdminVerificationsQuery(tab, Boolean(session));
+  const list = useAdminVerificationsQuery(tab, Boolean(token));
 
-  if (session === undefined) return <AdminSkeleton />;
-  if (session === null) return <CommunityLoginRequired />;
-  if (list.isError && isForbidden(list.error)) return <Forbidden userId={session.user.id} />;
+  if (token === undefined) return <AdminSkeleton />;
+  if (token === null) return <AdminLogin />;
 
   const items = list.data ?? [];
   const selected = items.find((item) => item.id === selectedId) ?? null;
@@ -59,25 +56,30 @@ export function AdminVerifications() {
           <h1 className="text-[24px] font-extrabold tracking-[-0.045em] md:text-[30px]">면허 인증 심사</h1>
           <p className="mt-1 text-[14px] text-sub">사진과 입력 정보가 맞는지 확인하고 승인하거나 반려해주세요</p>
         </div>
-        <div role="tablist" className="flex gap-1 rounded-full bg-surface p-1">
-          {reviewTabs.map(({ value, label }) => (
-            <button
-              key={value}
-              role="tab"
-              aria-selected={tab === value}
-              onClick={() => {
-                setTab(value);
-                setSelectedId(null);
-              }}
-              className={cn(
-                "h-9 rounded-full px-4 text-[14px] font-bold",
-                tab === value ? "bg-white text-ink shadow-sm" : "text-sub hover:text-ink",
-              )}
-            >
-              {label}
-              {value === tab && list.data && <span className="ml-1 text-faint">{list.data.length}</span>}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <div role="tablist" className="flex gap-1 rounded-full bg-surface p-1">
+            {reviewTabs.map(({ value, label }) => (
+              <button
+                key={value}
+                role="tab"
+                aria-selected={tab === value}
+                onClick={() => {
+                  setTab(value);
+                  setSelectedId(null);
+                }}
+                className={cn(
+                  "h-9 rounded-full px-4 text-[14px] font-bold",
+                  tab === value ? "bg-white text-ink shadow-sm" : "text-sub hover:text-ink",
+                )}
+              >
+                {label}
+                {value === tab && list.data && <span className="ml-1 text-faint">{list.data.length}</span>}
+              </button>
+            ))}
+          </div>
+          <button onClick={clearAdminToken} className="text-[13.5px] font-semibold text-sub hover:text-ink">
+            로그아웃
+          </button>
         </div>
       </div>
 
@@ -443,38 +445,6 @@ function ReviewActions({ id, onReviewed }: { id: string; onReviewed: (id: string
         </button>
       </div>
     </form>
-  );
-}
-
-function Forbidden({ userId }: { userId: string }) {
-  function copy() {
-    navigator.clipboard.writeText(userId).then(
-      () => toast("사용자 ID를 복사했어요"),
-      () => toast("복사하지 못했어요"),
-    );
-  }
-
-  return (
-    <Container className="flex justify-center py-20 md:py-28">
-      <div className="w-full max-w-[420px] text-center">
-        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-surface">
-          <ShieldAlert size={22} strokeWidth={2} />
-        </span>
-        <h1 className="mt-6 text-2xl font-extrabold tracking-[-0.04em]">관리자만 볼 수 있어요</h1>
-        <p className="mt-2 text-[15px] leading-[1.55] text-sub">
-          이 계정을 관리자로 쓰려면 아래 사용자 ID를
-          <br />
-          서버 환경변수 ADMIN_USER_IDS에 추가해주세요
-        </p>
-        <button
-          onClick={copy}
-          className="mt-6 inline-flex max-w-full items-center gap-2 rounded-[12px] bg-surface px-4 py-3 text-[13px] font-semibold"
-        >
-          <span className="truncate font-mono">{userId}</span>
-          <Copy size={14} className="shrink-0 text-sub" />
-        </button>
-      </div>
-    </Container>
   );
 }
 
