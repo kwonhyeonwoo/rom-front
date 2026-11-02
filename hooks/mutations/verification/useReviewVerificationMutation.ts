@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { ReviewStatus } from "@/lib/admin-verification";
-import { apiFetch } from "@/lib/api";
+import { adminFetch } from "@/lib/admin-api";
 
 export type ReviewDecision = { id: string; action: "approve" } | { id: string; action: "reject"; reason: string };
 
@@ -11,7 +11,7 @@ export function useReviewVerificationMutation() {
 
   return useMutation({
     mutationFn: (decision: ReviewDecision) =>
-      apiFetch<{ id: string; status: ReviewStatus }>(`/admin/verifications/${decision.id}/${decision.action}`, {
+      adminFetch<{ id: string; status: ReviewStatus }>(`/admin/verifications/${decision.id}/${decision.action}`, {
         method: "POST",
         body: decision.action === "reject" ? JSON.stringify({ reason: decision.reason }) : undefined,
       }),
