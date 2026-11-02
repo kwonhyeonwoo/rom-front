@@ -19,6 +19,7 @@ import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { reviewStage, type SavedSeminar } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
+import { WithdrawButton } from "./withdraw-dialog";
 
 const providerLabels: Record<string, string> = {
   google: "Google 계정",
@@ -34,7 +35,7 @@ const tabs = [
 
 export function MyPage() {
   const session = useSession();
-  const { data: user } = useUserQuery(Boolean(session));
+  const { data: user, status: userStatus } = useUserQuery(Boolean(session));
   const bookmarks = useBookmarksQuery(Boolean(session));
   const logout = useLogoutMutation();
 
@@ -50,7 +51,7 @@ export function MyPage() {
   const reviewsWaiting = items.filter((s) => ["ask", "write"].includes(reviewStage(s))).length;
 
   const menu = [
-    { label: "저장한 세미나", icon: Bookmark, href: "#saved", badge: String(items.length) },
+    { label: "저장한 세미나", icon: Bookmark, href: "#saved", badge: bookmarks.status === "pending" ? "" : String(items.length) },
     { label: "알림 조건", icon: Bell, href: "/alerts", badge: "준비 중" },
     { label: "수강 후기", icon: MessageSquareText, href: "/reviews", badge: reviewsWaiting > 0 ? `${reviewsWaiting}개 대기` : "" },
   ];
@@ -62,24 +63,29 @@ export function MyPage() {
       <div className="md:mt-7 md:grid md:grid-cols-[296px_minmax(0,1fr)] md:items-start md:gap-10">
         {/* 프로필 + 메뉴 */}
         <aside className="md:sticky md:top-6 md:rounded-[20px] md:border md:border-[#EFEFEF] md:p-6">
-          <div className="flex items-center gap-4 md:flex-col md:items-start">
-            <UserAvatar name={name} src={user?.avatarUrl} className="size-14 text-xl md:size-16 md:text-2xl" />
-            <div className="min-w-0">
-              <p className="truncate text-[19px] font-extrabold tracking-[-0.04em] md:text-[21px]">{name}님</p>
-              {email && <p className="mt-0.5 truncate text-[13.5px] text-sub">{email}</p>}
-              {provider && (
-                <span className="mt-2 inline-flex h-6 items-center rounded-full bg-surface px-2.5 text-[12px] font-semibold text-[#555]">
-                  {providerLabels[provider] ?? `${provider} 계정`}
-                </span>
-              )}
+          {userStatus === "pending" ? (
+            <ProfileSkeleton />
+          ) : (
+            <div className="flex items-center gap-4 md:flex-col md:items-start">
+              <UserAvatar name={name} src={user?.avatarUrl} className="size-14 text-xl md:size-16 md:text-2xl" />
+              <div className="min-w-0">
+                <p className="truncate text-[19px] font-extrabold tracking-[-0.04em] md:text-[21px]">{name}님</p>
+                {email && <p className="mt-0.5 truncate text-[13.5px] text-sub">{email}</p>}
+                {provider && (
+                  <span className="mt-2 inline-flex h-6 items-center rounded-full bg-surface px-2.5 text-[12px] font-semibold text-[#555]">
+                    {providerLabels[provider] ?? `${provider} 계정`}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <nav className="mt-6 hidden border-t border-line pt-3 md:block">
             {menu.map((item) => (
               <MenuLink key={item.label} {...item} />
             ))}
             <LogoutButton onClick={() => logout.mutate()} disabled={logout.isPending} />
+            <WithdrawButton className="mt-4" />
           </nav>
         </aside>
 
@@ -101,6 +107,7 @@ export function MyPage() {
               <MenuLink key={item.label} {...item} />
             ))}
             <LogoutButton onClick={() => logout.mutate()} disabled={logout.isPending} />
+            <WithdrawButton className="mt-3" />
           </nav>
         </div>
       </div>
@@ -265,20 +272,66 @@ function LoginRequired() {
   );
 }
 
+function ProfileSkeleton() {
+  return (
+    <div aria-hidden className="flex items-center gap-4 md:flex-col md:items-start">
+      <div className="skeleton size-14 shrink-0 rounded-full md:size-16" />
+      <div className="flex min-w-0 flex-1 flex-col gap-2 md:w-full">
+        <div className="skeleton h-6 w-28 rounded-md" />
+        <div className="skeleton h-4 w-44 max-w-full rounded" />
+        <div className="skeleton mt-1 h-6 w-20 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+// 마이페이지 전체 로딩 자리. 실제 화면과 같은 배치로 그려 불러온 뒤 덜컹이지 않게 한다
 function MyPageSkeleton() {
   return (
-    <Container className="pt-5 md:pt-11" aria-busy>
-      <div className="skeleton hidden h-9 w-40 rounded-lg md:block" />
-      <div className="md:mt-7 md:grid md:grid-cols-[296px_minmax(0,1fr)] md:gap-10">
-        <div className="skeleton h-[88px] rounded-[20px] md:h-[360px]" />
-        <div>
-          <div className="mt-6 grid grid-cols-3 gap-2.5 md:mt-0 md:gap-4">
-            {Array.from({ length: 3 }, (_, index) => (
-              <div key={index} className="skeleton h-[78px] rounded-[14px] md:h-[100px] md:rounded-[18px]" />
+    <Container className="pt-5 pb-10 md:pt-11 md:pb-0" aria-busy>
+      <span className="sr-only" role="status">
+        마이페이지를 불러오는 중
+      </span>
+      <div className="skeleton hidden h-9 w-36 rounded-lg md:block" />
+      <div className="md:mt-7 md:grid md:grid-cols-[296px_minmax(0,1fr)] md:items-start md:gap-10">
+        <div className="md:rounded-[20px] md:border md:border-[#EFEFEF] md:p-6">
+          <ProfileSkeleton />
+          <div aria-hidden className="mt-6 hidden flex-col border-t border-line pt-3 md:flex">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="flex h-12 items-center gap-3">
+                <div className="skeleton size-[18px] rounded" />
+                <div className="skeleton h-4 w-24 rounded" />
+              </div>
             ))}
           </div>
-          <div className="mt-12 hidden grid-cols-3 gap-6 md:grid">
-            <SkeletonList count={3} render={(index) => <SeminarCardSkeleton key={index} />} />
+        </div>
+        <div aria-hidden>
+          <div className="mt-6 grid grid-cols-3 gap-2.5 md:mt-0 md:gap-4">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className="rounded-[14px] bg-surface px-3.5 py-3.5 md:rounded-[18px] md:px-6 md:py-5">
+                <div className="skeleton h-4 w-16 rounded bg-white/70" />
+                <div className="skeleton mt-2 h-7 w-10 rounded bg-white/70 md:h-8" />
+              </div>
+            ))}
+          </div>
+          <div className="mt-9 flex items-center justify-between pb-4 md:mt-12 md:pb-5">
+            <div className="skeleton h-7 w-32 rounded-md" />
+            <div className="skeleton h-4 w-16 rounded" />
+          </div>
+          <div className="flex gap-2">
+            {[52, 72, 64].map((width) => (
+              <div key={width} className="skeleton h-9 rounded-full" style={{ width }} />
+            ))}
+          </div>
+          <div className="mt-7 hidden grid-cols-3 gap-x-6 gap-y-10 md:grid">
+            {Array.from({ length: 3 }, (_, index) => (
+              <SeminarCardSkeleton key={index} />
+            ))}
+          </div>
+          <div className="mt-2 md:hidden">
+            {Array.from({ length: 3 }, (_, index) => (
+              <SeminarListItemSkeleton key={index} />
+            ))}
           </div>
         </div>
       </div>

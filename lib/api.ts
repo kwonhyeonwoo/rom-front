@@ -23,6 +23,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 
   const res = await fetch(`${API_URL}${path}`, { ...init, headers });
   if (!res.ok) throw new ApiError(res.status, await res.text());
+  // 본문이 없는 성공 응답(예: 탈퇴 204)
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 

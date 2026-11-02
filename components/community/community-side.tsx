@@ -94,7 +94,9 @@ export function CommunityAside({
   // 비회원이면 null. 내 활동 대신 로그인 안내를 보여준다
   user: { name: string; avatarUrl?: string | null } | null;
 }) {
-  const { data: summary } = useCommunitySummaryQuery(user !== null);
+  const { data: summary, status } = useCommunitySummaryQuery(user !== null);
+  // 비회원이면 요청하지 않으므로 pending이어도 로딩으로 보지 않는다
+  const loading = user !== null && status === "pending";
 
   return (
     <aside className="sticky top-6 flex flex-col gap-4">
@@ -119,15 +121,23 @@ export function CommunityAside({
         </div>
         <div className="mt-4 grid grid-cols-2 text-center text-[13px] text-sub">
           <div>
-            <b className="block text-base text-ink">
-              {summary?.myPostCount ?? "-"}
-            </b>
+            {loading ? (
+              <span aria-hidden className="skeleton mx-auto mb-1 block h-5 w-6 rounded" />
+            ) : (
+              <b className="block text-base text-ink">
+                {summary?.myPostCount ?? "-"}
+              </b>
+            )}
             내 글
           </div>
           <div>
-            <b className="block text-base text-ink">
-              {summary?.myCommentCount ?? "-"}
-            </b>
+            {loading ? (
+              <span aria-hidden className="skeleton mx-auto mb-1 block h-5 w-6 rounded" />
+            ) : (
+              <b className="block text-base text-ink">
+                {summary?.myCommentCount ?? "-"}
+              </b>
+            )}
             댓글
           </div>
         </div>
@@ -145,7 +155,19 @@ export function CommunityAside({
         <div className="flex items-baseline justify-between">
           <b className="text-[15px]">후기 많은 세미나</b>
         </div>
-        {summary && summary.topSeminars.length === 0 ? (
+        {loading ? (
+          <ul aria-hidden className="mt-2">
+            {Array.from({ length: 3 }, (_, index) => (
+              <li key={index} className="flex items-center gap-3 py-2.5">
+                <div className="skeleton h-[59px] w-11 shrink-0 rounded-md" />
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <div className="skeleton h-4 w-full rounded" />
+                  <div className="skeleton h-3 w-16 rounded" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : summary && summary.topSeminars.length === 0 ? (
           <p className="mt-3 text-[13px] leading-[1.6] text-sub">
             세미나가 끝난 뒤 후기를 남기면 여기에 모여요.
           </p>

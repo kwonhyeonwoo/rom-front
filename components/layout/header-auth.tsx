@@ -15,12 +15,32 @@ const pillButton = "inline-flex h-10 items-center justify-center rounded-full px
 // 헤더 오른쪽 로그인/회원가입 또는 내 이름(마이페이지 링크)/로그아웃
 export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   const session = useSession();
-  const { data: user } = useUserQuery(Boolean(session));
+  const { data: user, status: userStatus } = useUserQuery(Boolean(session));
   const logout = useLogoutMutation();
   const { access } = useVerifyAccess();
 
-  // 세션 확인 전에는 버튼 자리만 비워 깜빡임을 줄인다
-  if (session === undefined) return <div className={mobile ? "h-[34px]" : "h-10"} />;
+  // 세션 확인 전에는 버튼 자리에 스켈레톤을 둔다
+  if (session === undefined) {
+    return (
+      <div aria-hidden className="flex items-center gap-1.5">
+        <div className={cn("skeleton rounded-full", mobile ? "h-[34px] w-12" : "h-10 w-16")} />
+        <div className={cn("skeleton rounded-full", mobile ? "h-[34px] w-[72px]" : "h-10 w-[88px]")} />
+      </div>
+    );
+  }
+
+  // 로그인했지만 내 정보를 아직 못 받았으면 프로필 자리만 스켈레톤
+  if (session && userStatus === "pending") {
+    return (
+      <div aria-hidden className="flex items-center gap-1.5">
+        <div className="mr-1 flex items-center gap-2">
+          <div className={cn("skeleton rounded-full", mobile ? "size-[30px]" : "size-8")} />
+          {!mobile && <div className="skeleton h-4 w-16 rounded" />}
+        </div>
+        <div className={cn("skeleton rounded-full", mobile ? "h-[34px] w-[68px]" : "h-10 w-[84px]")} />
+      </div>
+    );
+  }
 
   if (session) {
     const name = user?.name ?? session.user.email ?? "회원";

@@ -150,6 +150,15 @@ export function PostForm() {
                   <X size={18} />
                 </button>
               </div>
+            ) : bookmarks.status === "pending" ? (
+              <div aria-hidden className="mt-3 rounded-[12px] border border-[#E4E4E4]">
+                {Array.from({ length: 2 }, (_, index) => (
+                  <div key={index} className="flex flex-col gap-1.5 border-b border-line px-3.5 py-3 last:border-b-0">
+                    <div className="skeleton h-4 w-3/4 rounded" />
+                    <div className="skeleton h-3 w-1/2 rounded" />
+                  </div>
+                ))}
+              </div>
             ) : attended.length > 0 ? (
               <div className="mt-3 max-h-56 overflow-y-auto rounded-[12px] border border-[#E4E4E4]">
                 {attended.map((s) => (
