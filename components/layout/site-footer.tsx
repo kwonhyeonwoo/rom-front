@@ -6,12 +6,14 @@ export function SiteFooter() {
   return (
     <footer className="mt-1.5 border-t border-[#E8E8E6] pt-[22px] pb-[26px] md:mt-[90px] md:pt-7 md:pb-10">
       <Container>
-        <nav className="flex gap-4 text-[13px] font-semibold text-[#444] md:gap-6">
+        <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[13px] font-semibold text-[#444] md:gap-x-6">
+          <Link href="/help?tab=notice">공지사항</Link>
+          <Link href="/help">고객센터</Link>
           <Link href="/terms">이용약관</Link>
           <Link href="/privacy" className="font-extrabold text-ink">
             개인정보처리방침
           </Link>
-          <Link href="/contact">광고·제휴 문의</Link>
+          <Link href="/help?tab=inquiry&type=PARTNER">광고·제휴 문의</Link>
         </nav>
         <p className="mt-3.5 text-xs leading-[1.75] text-faint md:mt-4 md:text-[12.5px] md:leading-[1.8]">
           롬 · 대표 홍길동<span className="md:hidden"><br /></span>

@@ -16,6 +16,9 @@ export function useReviewVerificationMutation() {
         body: decision.action === "reject" ? JSON.stringify({ reason: decision.reason }) : undefined,
       }),
     // 이미 처리된 요청(409)이어도 목록을 새로 받아 화면을 맞춘다
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["admin-verifications"] }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-verifications"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "summary"] });
+    },
   });
 }

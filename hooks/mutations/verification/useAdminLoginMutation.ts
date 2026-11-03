@@ -16,6 +16,7 @@ export function useAdminLoginMutation() {
     onSuccess: ({ token }) => {
       setAdminToken(token);
       queryClient.invalidateQueries({ queryKey: ["admin-verifications"] });
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
     },
   });
 }
