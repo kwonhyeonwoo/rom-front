@@ -8,6 +8,8 @@ export type Review = {
   content: string;
   createdAt: string;
   updatedAt: string;
+  // 후기와 함께 커뮤니티 세미나 후기 게시판에 올라간 글
+  post: { id: string; title: string; anonymous: boolean } | null;
 };
 
 export type ApiSavedSeminar = ApiSeminar & {
@@ -38,6 +40,16 @@ export function reviewStage(seminar: SavedSeminar): ReviewStage {
   if (seminar.attendance === "ATTENDED") return "write";
   if (seminar.attendance === "NOT_ATTENDED") return "skipped";
   return "ask";
+}
+
+// 커뮤니티 글 제목을 비웠을 때 서버가 쓰는 제목과 같게 맞춘다
+export const REVIEW_TITLE_MAX = 100;
+export function defaultReviewTitle(seminarTitle: string): string {
+  const suffix = " 수강 후기";
+  const chars = Array.from(seminarTitle.trim());
+  const max = REVIEW_TITLE_MAX - suffix.length;
+  const base = chars.length > max ? chars.slice(0, max - 1).join("") + "…" : chars.join("");
+  return base + suffix;
 }
 
 export const REVIEW_MIN_LENGTH = 10;

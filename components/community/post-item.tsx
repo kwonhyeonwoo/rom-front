@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Heart, Link2, MessageCircle, Star } from "lucide-react";
 
+import { StarRating } from "@/components/review/star-rating";
 import { boardLabel, timeAgo, type Post } from "@/lib/community";
 import { formatSchedule } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,9 @@ export function PostItem({ post }: { post: Post }) {
         <h3 className="mt-1.5 line-clamp-2 text-[15.5px] leading-[1.4] font-bold tracking-[-0.03em] md:text-[16.5px]">
           {post.title}
         </h3>
+        {post.rating !== null && (
+          <StarRating value={post.rating} size={13} className="mt-1.5" />
+        )}
         <p className="mt-1 line-clamp-2 text-[13.5px] leading-[1.55] text-sub md:text-sm">
           {post.content}
         </p>

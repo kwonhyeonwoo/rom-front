@@ -65,6 +65,8 @@ export type Post = {
   commentCount: number;
   viewCount: number;
   createdAt: string;
+  // 마이페이지 수강 후기로 쓴 글이면 작성자가 준 별점(1~5)
+  rating: number | null;
   seminar: PostSeminar | null;
 };
 
