@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Bell } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Container } from "./container";
@@ -47,13 +46,6 @@ export function SiteHeader({
         </div>
         <div className="flex items-center gap-2.5">
           {searchSlot && <div className="mr-2.5">{searchSlot}</div>}
-          <Link
-            href="/alerts"
-            aria-label="알림"
-            className="mr-1.5 text-[#555] hover:text-ink"
-          >
-            <Bell size={21} strokeWidth={1.7} />
-          </Link>
           <HeaderAuth />
         </div>
       </Container>

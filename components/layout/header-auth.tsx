@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Bell } from "lucide-react";
 
 import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
-import { useUnreadAnswersQuery } from "@/hooks/queries/support/useUnreadAnswersQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { cn } from "@/lib/utils";
 import { VerifyChip } from "@/components/verification/verify-chip";
+import { NotificationBell } from "./notification-bell";
 import { UserAvatar } from "./user-avatar";
 
 const pillButton = "inline-flex h-10 items-center justify-center rounded-full px-[18px] text-sm font-semibold whitespace-nowrap";
@@ -18,7 +17,6 @@ const pillButton = "inline-flex h-10 items-center justify-center rounded-full px
 export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   const session = useSession();
   const { data: user } = useUserQuery(Boolean(session));
-  const unread = useUnreadAnswersQuery(Boolean(session));
   const logout = useLogoutMutation();
   const { access } = useVerifyAccess();
 
@@ -29,19 +27,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
     const name = user?.name ?? session.user.email ?? "회원";
     return (
       <div className="flex items-center gap-1.5">
-        {/* 문의에 답변이 달리면 빨간 숫자 배지와 함께 내 문의 내역으로 연결한다 */}
-        <Link
-          href="/help/inquiries"
-          aria-label={unread.data ? `새 답변 ${unread.data}개` : "내 문의 내역"}
-          className={cn("relative flex items-center justify-center rounded-full text-[#555] hover:bg-surface hover:text-ink", mobile ? "size-8" : "mr-0.5 size-9")}
-        >
-          <Bell size={19} strokeWidth={1.8} />
-          {Boolean(unread.data) && (
-            <span className="absolute top-0.5 right-0 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-soon px-1 text-[10.5px] font-bold text-white tabular-nums">
-              {unread.data}
-            </span>
-          )}
-        </Link>
+        <NotificationBell mobile={mobile} />
         <VerifyChip access={access} className={mobile ? "h-6 px-2 text-[11px]" : undefined} />
         {/* 이름(모바일은 프로필 동그라미)을 누르면 마이페이지 */}
         <Link

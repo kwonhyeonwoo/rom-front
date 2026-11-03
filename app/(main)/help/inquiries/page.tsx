@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { MyInquiries } from "@/components/help/my-inquiries";
@@ -12,7 +13,10 @@ export default function MyInquiriesRoute() {
     <>
       <SiteHeader activeHref="" />
       <main>
-        <MyInquiries />
+        {/* 알림에서 넘어온 문의 id를 주소에서 읽는 동안 나머지 화면이 막히지 않게 한다 */}
+        <Suspense>
+          <MyInquiries />
+        </Suspense>
       </main>
     </>
   );
