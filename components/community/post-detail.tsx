@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Heart, Link2, Lock, Trash2 } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { StarRating } from "@/components/review/star-rating";
 import { useAddCommentMutation } from "@/hooks/mutations/community/useAddCommentMutation";
 import { useDeleteCommentMutation } from "@/hooks/mutations/community/useDeleteCommentMutation";
 import { useDeletePostMutation } from "@/hooks/mutations/community/useDeletePostMutation";
@@ -73,7 +74,7 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
   function deletePost() {
     remove.mutate(post.id, {
       onSuccess: () => {
-        toast("글을 삭제했어요");
+        toast(post.rating !== null ? "글과 수강 후기를 삭제했어요" : "글을 삭제했어요");
         router.replace("/community");
       },
       onError: (error) =>
@@ -131,6 +132,11 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
           {post.mine &&
             (confirming ? (
               <span className="flex items-center gap-2 text-[13px] font-semibold">
+                {post.rating !== null && (
+                  <span className="hidden font-normal text-sub sm:inline">
+                    마이페이지 수강 후기도 함께 지워져요
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={deletePost}
@@ -158,6 +164,13 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
               </button>
             ))}
         </div>
+
+        {post.rating !== null && (
+          <div className="mt-4 flex items-center gap-2 text-[13.5px] font-semibold text-sub">
+            <StarRating value={post.rating} size={17} />
+            수강 후 별점
+          </div>
+        )}
 
         {post.seminar && (
           <div className="mt-4 flex items-center gap-3 rounded-[14px] bg-surface px-4 py-3.5">

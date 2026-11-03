@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MessageSquareText } from "lucide-react";
+import { ChevronRight, MessageSquareText } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { ListStatus } from "@/components/seminar/list-status";
@@ -28,7 +28,8 @@ export function ReviewsPage() {
     <Container className="max-w-[820px] pt-6 pb-12 md:pt-11">
       <h1 className="text-[26px] font-extrabold tracking-[-0.045em] md:text-[30px]">수강 후기</h1>
       <p className="mt-2 text-[14.5px] leading-[1.6] text-sub">
-        저장해둔 세미나가 끝나면 수강하셨는지 물어볼게요. 들은 세미나에만 후기를 남길 수 있어요.
+        저장해둔 세미나가 끝나면 수강하셨는지 물어볼게요. 들은 세미나에만 후기를 남길 수 있고, 남긴 후기는 커뮤니티
+        세미나 후기 게시판에도 함께 올라가요.
       </p>
 
       {bookmarks.status === "pending" ? (
@@ -96,6 +97,15 @@ function ReviewRow({ seminar, showContent = false }: { seminar: SavedSeminar; sh
         <div className="mt-3 rounded-[12px] border border-line px-4 py-3.5">
           <StarRating value={seminar.review.rating} size={15} />
           <p className="mt-2 text-[14.5px] leading-[1.7] whitespace-pre-line">{seminar.review.content}</p>
+          {seminar.review.post && (
+            <Link
+              href={`/community/${seminar.review.post.id}`}
+              className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-semibold text-brand hover:underline"
+            >
+              커뮤니티 글 보기
+              <ChevronRight size={14} />
+            </Link>
+          )}
         </div>
       )}
       <ReviewAction seminar={seminar} />
