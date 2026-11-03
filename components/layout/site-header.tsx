@@ -10,7 +10,6 @@ const navItems = [
   { label: "세미나", href: "/" },
   { label: "보수교육", href: "/search?credit=1" },
   { label: "마감 임박", href: "/search?closingSoon=1" },
-  { label: "강사", href: "/instructors" },
   { label: "커뮤니티", href: "/community" },
 ];
 
@@ -35,7 +34,11 @@ export function SiteHeader({
               <Link
                 key={item.label}
                 href={item.href}
-                className={cn(item.href === activeHref ? "text-ink" : "text-[#7A7A7A] hover:text-ink")}
+                className={cn(
+                  item.href === activeHref
+                    ? "text-ink"
+                    : "text-[#7A7A7A] hover:text-ink",
+                )}
               >
                 {item.label}
               </Link>
@@ -44,7 +47,11 @@ export function SiteHeader({
         </div>
         <div className="flex items-center gap-2.5">
           {searchSlot && <div className="mr-2.5">{searchSlot}</div>}
-          <Link href="/alerts" aria-label="알림" className="mr-1.5 text-[#555] hover:text-ink">
+          <Link
+            href="/alerts"
+            aria-label="알림"
+            className="mr-1.5 text-[#555] hover:text-ink"
+          >
             <Bell size={21} strokeWidth={1.7} />
           </Link>
           <HeaderAuth />
