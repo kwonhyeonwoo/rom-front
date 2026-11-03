@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronLeft, MessagesSquare } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
@@ -15,6 +16,8 @@ export function MyInquiries() {
   const session = useSession();
   const inquiries = useMyInquiriesQuery(Boolean(session));
   const markRead = useMarkInquiryReadMutation();
+  // 알림에서 들어오면 해당 문의를 바로 펼친다
+  const openId = useSearchParams().get("id");
 
   return (
     <Container className="max-w-[880px] pt-5 pb-14 md:pt-11">
@@ -61,6 +64,7 @@ export function MyInquiries() {
                 <li key={item.id}>
                   <details
                     className="group"
+                    open={item.id === openId}
                     onToggle={(event) => {
                       if (event.currentTarget.open && item.unread && !markRead.isPending) markRead.mutate(item.id);
                     }}
