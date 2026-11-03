@@ -11,12 +11,13 @@ import {
 import { ListStatus } from "@/components/seminar/list-status";
 import { useSeminarsQuery } from "@/hooks/queries/seminar/useSeminarsQuery";
 import { defaultFilters, type SearchFilters } from "@/lib/search";
+import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
 const SECTION_SIZE = 4;
 const PRIVATE_SECTION_SIZE = 12;
 
-// 보수교육 인정 교육. 교육일이 가까운 순
+// 보수교육 인정 교육. 교육일이 가까운 순. 메인에서는 오른쪽 인기글 옆에 3열로 놓는다
 export function CeCourseSection() {
   return (
     <GridSection
@@ -25,6 +26,9 @@ export function CeCourseSection() {
       href="/search?credit=1&sort=date"
       filters={{ credit: true, sort: "date" }}
       empty="다가오는 보수교육이 없어요."
+      size={3}
+      columns={3}
+      bare
     />
   );
 }
@@ -52,6 +56,8 @@ function GridSection({
   filters,
   empty,
   size = SECTION_SIZE,
+  columns = 4,
+  bare = false,
 }: {
   title: string;
   description: string;
@@ -59,19 +65,27 @@ function GridSection({
   filters: Partial<SearchFilters>;
   empty: string;
   size?: number;
+  // PC 카드 열 수
+  columns?: 3 | 4;
+  // true면 Container·위 여백 없이 내용만 (다른 블록과 나란히 놓을 때)
+  bare?: boolean;
 }) {
   const { data, status } = useSeminarsQuery(
     { ...defaultFilters, ...filters },
     size,
   );
   const items = data?.items ?? [];
+  const grid = cn(
+    "hidden gap-x-6 gap-y-10 md:grid",
+    columns === 3 ? "md:grid-cols-3" : "md:grid-cols-4",
+  );
 
-  return (
-    <Container className="mt-[38px] md:mt-[72px]">
+  const body = (
+    <>
       <SectionHeader title={title} description={description} href={href} />
       {status === "pending" ? (
         <>
-          <div className="hidden grid-cols-4 gap-x-6 gap-y-10 md:grid">
+          <div className={grid}>
             <SkeletonList
               count={size}
               render={(index) => <SeminarCardSkeleton key={index} />}
@@ -88,7 +102,7 @@ function GridSection({
         <ListStatus status={status} empty={empty} />
       ) : (
         <>
-          <div className="hidden grid-cols-4 gap-x-6 gap-y-10 md:grid">
+          <div className={grid}>
             {items.map((seminar) => (
               <SeminarCard key={seminar.id} seminar={seminar} />
             ))}
@@ -100,6 +114,12 @@ function GridSection({
           </div>
         </>
       )}
-    </Container>
+    </>
+  );
+
+  return bare ? (
+    <div className="min-w-0">{body}</div>
+  ) : (
+    <Container className="mt-[38px] md:mt-[72px]">{body}</Container>
   );
 }
