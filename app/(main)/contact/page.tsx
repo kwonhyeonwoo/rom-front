@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { ComingSoon } from "@/components/layout/coming-soon";
-
-export const metadata: Metadata = {
-  title: "광고·제휴 문의 · 롬",
-};
-
+// 광고·제휴 문의는 고객센터 1:1 문의의 '광고·제휴' 유형으로 받는다
 export default function ContactPage() {
-  return <ComingSoon title="광고·제휴 문의" description="문의 페이지를 준비하는 동안 contact@rom.example 로 연락해주세요" />;
+  redirect("/help?tab=inquiry&type=PARTNER");
 }

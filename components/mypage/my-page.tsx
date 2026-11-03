@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Bookmark, ChevronRight, LogOut, MessageSquareText } from "lucide-react";
+import { Bell, Bookmark, ChevronRight, Headset, LogOut, MessageSquareText, MessagesSquare } from "lucide-react";
 
 import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
@@ -53,6 +53,8 @@ export function MyPage() {
     { label: "저장한 세미나", icon: Bookmark, href: "#saved", badge: String(items.length) },
     { label: "알림 조건", icon: Bell, href: "/alerts", badge: "준비 중" },
     { label: "수강 후기", icon: MessageSquareText, href: "/reviews", badge: reviewsWaiting > 0 ? `${reviewsWaiting}개 대기` : "" },
+    { label: "1:1 문의 내역", icon: MessagesSquare, href: "/help/inquiries", badge: "" },
+    { label: "고객센터", icon: Headset, href: "/help", badge: "" },
   ];
 
   return (
