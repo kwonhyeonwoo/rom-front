@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, Copy, Mail } from "lucide-react";
+import { ChevronLeft, Copy } from "lucide-react";
 
 import { useAnswerInquiryMutation } from "@/hooks/mutations/admin/useAnswerInquiryMutation";
 import { useAdminInquiriesQuery } from "@/hooks/queries/admin/useAdminInquiriesQuery";
@@ -22,7 +22,7 @@ const tabs: { value: InquiryStatus; label: string }[] = [
   { value: "ANSWERED", label: "답변 완료" },
 ];
 
-// 1:1 문의를 보고 답변하는 화면. 회원은 내 문의 내역에서 답변을 보고, 비회원은 이메일로 받는다
+// 1:1 문의를 보고 답변하는 화면. 답변하면 문의한 회원의 헤더 알림과 문의 내역에 바로 보인다
 export function AdminInquiries() {
   const [tab, setTab] = useState<InquiryStatus>("OPEN");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function AdminInquiries() {
       <div className={cn("flex flex-wrap items-end justify-between gap-3", selected && "hidden md:flex")}>
         <div>
           <h1 className="text-[24px] font-extrabold tracking-[-0.045em] md:text-[30px]">1:1 문의</h1>
-          <p className="mt-1 text-[14px] text-sub">오래 기다린 문의부터 보여요. 답변하면 회원의 문의 내역에 바로 보여요</p>
+          <p className="mt-1 text-[14px] text-sub">오래 기다린 문의부터 보여요. 답변하면 문의한 회원에게 새 답변으로 알려져요</p>
         </div>
         <div role="tablist" className="flex gap-1 rounded-full bg-surface p-1">
           {tabs.map(({ value, label }) => (
@@ -89,12 +89,12 @@ export function AdminInquiries() {
                   >
                     <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-sub">
                       <span>{inquiryTypeLabel(item.type)}</span>
-                      <span className="text-faint">·</span>
-                      <span className={item.member ? "" : "text-[#B25E00]"}>{item.member ? "회원" : "비회원"}</span>
+                      {!item.member && <span className="text-faint">·</span>}
+                      {!item.member && <span className="text-[#B25E00]">이전 비회원 문의</span>}
                       <span className="ml-auto font-medium text-faint">{formatRequestedAt(item.createdAt)}</span>
                     </div>
                     <p className="mt-1 truncate text-[15.5px] font-bold">{item.title}</p>
-                    <p className="mt-0.5 truncate text-[13px] text-sub">{item.email}</p>
+                    {item.email && <p className="mt-0.5 truncate text-[13px] text-sub">{item.email}</p>}
                   </button>
                 </li>
               ))}
@@ -121,13 +121,6 @@ export function AdminInquiries() {
   );
 }
 
-// 비회원에게 보낼 답장 메일 (관리자 메일 앱에서 열린다)
-function mailtoHref(item: AdminInquiry, answer: string) {
-  const subject = `[롬 고객센터] ${item.title} 문의에 답변드려요`;
-  const body = `안녕하세요, 롬 고객센터예요.\n\n${answer}\n\n---\n보내주신 문의\n${item.content}`;
-  return `mailto:${item.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-
 function InquiryDetail({
   item,
   onBack,
@@ -140,6 +133,7 @@ function InquiryDetail({
   const chip = inquiryStatusChip[item.status];
 
   function copyEmail() {
+    if (!item.email) return;
     navigator.clipboard.writeText(item.email).then(
       () => toast("이메일을 복사했어요"),
       () => toast("복사하지 못했어요"),
@@ -166,17 +160,19 @@ function InquiryDetail({
       <dl className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px]">
         <div className="flex items-center gap-1.5">
           <dt className="text-sub">보낸 사람</dt>
-          <dd className="font-bold">{item.member ? "회원" : "비회원"}</dd>
+          <dd className="font-bold">{item.member ? "회원" : "이전 비회원 문의"}</dd>
         </div>
-        <div className="flex min-w-0 items-center gap-1.5">
-          <dt className="text-sub">이메일</dt>
-          <dd className="flex min-w-0 items-center gap-1 font-bold">
-            <span className="truncate">{item.email}</span>
-            <button onClick={copyEmail} aria-label="이메일 복사" className="rounded p-1 text-faint hover:text-ink">
-              <Copy size={14} />
-            </button>
-          </dd>
-        </div>
+        {item.email && (
+          <div className="flex min-w-0 items-center gap-1.5">
+            <dt className="text-sub">이메일</dt>
+            <dd className="flex min-w-0 items-center gap-1 font-bold">
+              <span className="truncate">{item.email}</span>
+              <button onClick={copyEmail} aria-label="이메일 복사" className="rounded p-1 text-faint hover:text-ink">
+                <Copy size={14} />
+              </button>
+            </dd>
+          </div>
+        )}
       </dl>
 
       <p className="mt-4 rounded-[14px] bg-surface px-4 py-3.5 text-[14.5px] leading-[1.65] break-words whitespace-pre-wrap">
@@ -191,13 +187,10 @@ function InquiryDetail({
           <p className="mt-2 rounded-[14px] border border-[#EFEFEF] px-4 py-3.5 text-[14.5px] leading-[1.65] break-words whitespace-pre-wrap">
             {item.answer}
           </p>
-          {!item.member && item.answer && (
-            <a
-              href={mailtoHref(item, item.answer)}
-              className="mt-3 inline-flex h-10 items-center gap-1.5 rounded-full border border-[#E4E4E4] px-4 text-[13.5px] font-bold"
-            >
-              <Mail size={15} /> 이메일로 다시 보내기
-            </a>
+          {item.status === "ANSWERED" && (
+            <p className="mt-2 text-[12.5px] text-faint">
+              {item.member ? (item.unread ? "회원이 아직 열어보지 않았어요" : "회원이 확인했어요") : "비회원 문의라 화면 알림은 가지 않아요"}
+            </p>
           )}
         </div>
       ) : (
@@ -220,13 +213,7 @@ function AnswerForm({ item, onAnswered }: { item: AdminInquiry; onAnswered: () =
       { id: item.id, answer: trimmed },
       {
         onSuccess: () => {
-          if (item.member) {
-            toast("답변했어요. 회원의 문의 내역에 보여요");
-          } else {
-            // 비회원은 화면으로 답변을 볼 수 없어 메일 앱을 열어 바로 보내게 한다
-            toast("답변을 저장했어요. 메일 앱에서 보내기를 눌러주세요");
-            window.location.href = mailtoHref(item, trimmed);
-          }
+          toast(item.member ? "답변했어요. 회원에게 새 답변으로 알려져요" : "답변을 저장했어요");
           onAnswered();
         },
         onError: (error) => toast(apiErrorMessage(error, "답변하지 못했어요. 잠시 후 다시 시도해주세요")),
@@ -241,7 +228,7 @@ function AnswerForm({ item, onAnswered }: { item: AdminInquiry; onAnswered: () =
       </label>
       {!item.member && (
         <p className="mt-1 text-[12.5px] leading-[1.5] text-[#B25E00]">
-          비회원 문의예요. 저장하면 메일 앱이 열리니 {item.email} 로 보내주세요
+          회원 전용으로 바꾸기 전에 받은 비회원 문의라 알림이 가지 않아요. 필요하면 {item.email ?? "문의자"} 에게 직접 연락해주세요
         </p>
       )}
       <textarea
@@ -250,7 +237,7 @@ function AnswerForm({ item, onAnswered }: { item: AdminInquiry; onAnswered: () =
         onChange={(event) => setAnswer(event.target.value)}
         maxLength={ANSWER_MAX}
         rows={7}
-        placeholder="회원에게 보일 답변을 적어주세요"
+        placeholder="문의한 회원에게 보일 답변을 적어주세요"
         className="mt-2 w-full resize-y rounded-[12px] border border-[#E1E1E1] px-3.5 py-3 text-[14.5px] leading-[1.6] outline-none placeholder:text-faint focus:border-ink"
       />
       <div className="mt-1 flex items-center justify-between">
@@ -264,7 +251,7 @@ function AnswerForm({ item, onAnswered }: { item: AdminInquiry; onAnswered: () =
         disabled={!valid || answerMutation.isPending}
         className="mt-3 h-12 w-full rounded-full bg-ink text-[15px] font-bold text-white disabled:opacity-40"
       >
-        {answerMutation.isPending ? "보내는 중…" : item.member ? "답변 보내기" : "답변 저장하고 메일 쓰기"}
+        {answerMutation.isPending ? "보내는 중…" : "답변 보내기"}
       </button>
     </form>
   );

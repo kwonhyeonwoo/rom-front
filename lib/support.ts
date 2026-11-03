@@ -21,15 +21,17 @@ export type Inquiry = {
   type: InquiryType;
   title: string;
   content: string;
-  email: string;
   status: InquiryStatus;
   answer: string | null;
   answeredAt: string | null;
+  // 답변이 달렸는데 아직 열어보지 않았다
+  unread: boolean;
   createdAt: string;
 };
 
-// 관리자 화면은 회원 여부와 답변한 관리자를 더 받는다
-export type AdminInquiry = Inquiry & { member: boolean; answeredBy: string | null };
+// 관리자 화면은 회원 여부, 접수 당시 이메일, 답변한 관리자를 더 받는다.
+// member가 false인 문의는 회원 전용으로 바꾸기 전에 받은 비회원 문의다
+export type AdminInquiry = Inquiry & { member: boolean; email: string | null; answeredBy: string | null };
 
 export type AdminSummary = { pendingVerifications: number; openInquiries: number };
 
@@ -87,7 +89,7 @@ export const faqs: { q: string; a: string }[] = [
   },
   {
     q: "교육업체인데 세미나를 올리거나 광고하고 싶어요",
-    a: "1:1 문의에서 '광고·제휴'를 골라 업체명과 연락처를 남겨주세요. 담당자가 이메일로 연락드려요.",
+    a: "로그인 후 1:1 문의에서 '광고·제휴'를 골라 업체명과 연락처를 남겨주세요. 답변은 마이페이지 문의 내역에서 확인할 수 있고, 계정이 없으면 하단의 contact 메일로 보내주세요.",
   },
   {
     q: "탈퇴하고 싶어요",

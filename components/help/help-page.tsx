@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Headset } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { useUnreadAnswersQuery } from "@/hooks/queries/support/useUnreadAnswersQuery";
 import { useSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
 import { FaqList } from "./faq-list";
@@ -25,6 +26,7 @@ export function HelpPage() {
   const router = useRouter();
   const pathname = usePathname();
   const session = useSession();
+  const unread = useUnreadAnswersQuery(Boolean(session));
   const tab: Tab = tabs.find((t) => t.value === params.get("tab"))?.value ?? "notice";
 
   function select(next: Tab) {
@@ -41,9 +43,11 @@ export function HelpPage() {
         {session && (
           <Link
             href="/help/inquiries"
-            className="hidden shrink-0 items-center gap-0.5 text-[13.5px] font-semibold text-sub hover:text-ink sm:flex"
+            className="flex shrink-0 items-center gap-1 text-[13.5px] font-semibold text-sub hover:text-ink"
           >
-            내 문의 내역 <ChevronRight size={15} />
+            내 문의 내역
+            {Boolean(unread.data) && <span className="rounded-full bg-soon px-1.5 text-[11px] font-bold text-white">새 답변 {unread.data}</span>}
+            <ChevronRight size={15} />
           </Link>
         )}
       </div>
