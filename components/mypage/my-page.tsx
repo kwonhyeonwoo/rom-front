@@ -75,7 +75,7 @@ export function MyPage() {
         {/* 프로필 + 메뉴 */}
         <aside className="md:sticky md:top-6 md:rounded-[20px] md:border md:border-[#EFEFEF] md:p-6">
           <div className="flex items-center gap-4 md:flex-col md:items-start">
-            <UserAvatar name={name} src={user?.avatarUrl} className="size-14 text-xl md:size-16 md:text-2xl" />
+            <UserAvatar name={name} className="size-14 text-xl md:size-16 md:text-2xl" />
             <div className="min-w-0">
               <p className="truncate text-[19px] font-extrabold tracking-[-0.04em] md:text-[21px]">{name}님</p>
               {email && <p className="mt-0.5 truncate text-[13.5px] text-sub">{email}</p>}

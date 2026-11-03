@@ -226,7 +226,7 @@ export function CommunityPage() {
         <div className="hidden lg:block">
           <CommunityAside
             writeHref={writeHref}
-            user={session ? { name, avatarUrl: user?.avatarUrl } : null}
+            user={session ? { name } : null}
           />
         </div>
       </div>

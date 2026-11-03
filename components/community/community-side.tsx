@@ -92,7 +92,7 @@ export function CommunityAside({
 }: {
   writeHref: string;
   // 비회원이면 null. 내 활동 대신 로그인 안내를 보여준다
-  user: { name: string; avatarUrl?: string | null } | null;
+  user: { name: string } | null;
 }) {
   const { data: summary } = useCommunitySummaryQuery(user !== null);
 
@@ -114,7 +114,7 @@ export function CommunityAside({
       ) : (
       <div className="rounded-[20px] border border-[#EFEFEF] p-5">
         <div className="flex items-center gap-2.5">
-          <UserAvatar name={user.name} src={user.avatarUrl} className="size-10" />
+          <UserAvatar name={user.name} className="size-10" />
           <p className="min-w-0 truncate text-[15px] font-bold">{user.name}님</p>
         </div>
         <div className="mt-4 grid grid-cols-2 text-center text-[13px] text-sub">

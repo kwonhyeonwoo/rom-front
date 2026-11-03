@@ -24,7 +24,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   if (session === undefined) return <div className={mobile ? "h-[34px]" : "h-10"} />;
 
   if (session) {
-    const name = user?.name ?? session.user.email ?? "회원";
+    const name = user?.name ?? session.user.email?.split("@")[0] ?? "회원";
     return (
       <div className="flex items-center gap-1.5">
         <NotificationBell mobile={mobile} />
@@ -35,8 +35,8 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
           aria-label="마이페이지"
           className="mr-1 flex items-center gap-2 rounded-full text-[14.5px] font-semibold text-ink hover:opacity-80"
         >
-          <UserAvatar name={name} src={user?.avatarUrl} className={mobile ? "size-[30px] text-[13px]" : "size-8"} />
-          {!mobile && <span className="max-w-40 truncate">{name}님</span>}
+          <UserAvatar name={name} className={mobile ? "size-[30px] text-[13px]" : "size-8"} />
+          {!mobile && <span className="max-w-40 truncate">{name}</span>}
         </Link>
         <button
           type="button"

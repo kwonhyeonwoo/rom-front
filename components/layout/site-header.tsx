@@ -8,7 +8,6 @@ import { Logo } from "./logo";
 const navItems = [
   { label: "세미나", href: "/" },
   { label: "보수교육", href: "/search?credit=1" },
-  { label: "마감 임박", href: "/search?closingSoon=1" },
   { label: "커뮤니티", href: "/community" },
 ];
 
