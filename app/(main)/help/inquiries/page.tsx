@@ -5,7 +5,8 @@ import { MyInquiries } from "@/components/help/my-inquiries";
 import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
-  title: "내 문의 내역 · 롬",
+  title: "내 문의 내역",
+  robots: { index: false, follow: false },
 };
 
 export default function MyInquiriesRoute() {

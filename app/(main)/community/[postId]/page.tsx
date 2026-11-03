@@ -6,7 +6,7 @@ import { PostDetail } from "@/components/community/post-detail";
 import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
-  title: "커뮤니티 · 롬",
+  title: "커뮤니티",
 };
 
 export default function PostRoute({ params }: PageProps<"/community/[postId]">) {

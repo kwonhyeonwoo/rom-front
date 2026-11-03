@@ -5,7 +5,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
 
 export const metadata: Metadata = {
-  title: "로그인 · 롬",
+  title: "로그인",
 };
 
 export default function LoginPage() {

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { ComingSoon } from "@/components/layout/coming-soon";
 
 export const metadata: Metadata = {
-  title: "알림 조건 만들기 · 롬",
+  title: "알림 조건 만들기",
+  robots: { index: false, follow: false },
 };
 
 export default function NewAlertPage() {

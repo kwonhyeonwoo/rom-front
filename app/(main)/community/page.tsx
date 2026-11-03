@@ -6,7 +6,9 @@ import { CommunitySkeleton } from "@/components/community/login-required";
 import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
-  title: "커뮤니티 · 롬",
+  title: "커뮤니티",
+  description:
+    "면허 인증을 마친 물리치료사끼리 세미나 정보, 임상 고민, 커리어 이야기를 나누는 커뮤니티예요.",
 };
 
 export default function CommunityRoute() {

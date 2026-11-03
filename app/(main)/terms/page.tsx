@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ComingSoon } from "@/components/layout/coming-soon";
 
 export const metadata: Metadata = {
-  title: "이용약관 · 롬",
+  title: "이용약관",
 };
 
 export default function TermsPage() {
