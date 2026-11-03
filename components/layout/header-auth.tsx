@@ -6,7 +6,7 @@ import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { useVerifyAccess } from "@/hooks/useVerifyAccess";
-import { cn } from "@/lib/utils";
+import { cn, sessionUserName } from "@/lib/utils";
 import { VerifyChip } from "@/components/verification/verify-chip";
 import { NotificationBell } from "./notification-bell";
 import { UserAvatar } from "./user-avatar";
@@ -24,7 +24,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   if (session === undefined) return <div className={mobile ? "h-[34px]" : "h-10"} />;
 
   if (session) {
-    const name = user?.name ?? session.user.email?.split("@")[0] ?? "회원";
+    const name = sessionUserName(user, session.user);
     return (
       <div className="flex items-center gap-1.5">
         <NotificationBell mobile={mobile} />
