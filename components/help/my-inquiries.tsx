@@ -4,15 +4,17 @@ import Link from "next/link";
 import { ChevronDown, ChevronLeft, MessagesSquare } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { useMarkInquiryReadMutation } from "@/hooks/mutations/support/useMarkInquiryReadMutation";
 import { useMyInquiriesQuery } from "@/hooks/queries/support/useMyInquiriesQuery";
 import { useSession } from "@/hooks/useSession";
 import { formatDate, inquiryStatusChip, inquiryTypeLabel } from "@/lib/support";
 import { cn } from "@/lib/utils";
 
-// 내 1:1 문의 내역. 문의를 누르면 보낸 내용과 답변이 펼쳐진다
+// 내 1:1 문의 내역. 문의를 누르면 보낸 내용과 답변이 펼쳐지고, 새 답변은 열어보면 읽음 처리된다
 export function MyInquiries() {
   const session = useSession();
   const inquiries = useMyInquiriesQuery(Boolean(session));
+  const markRead = useMarkInquiryReadMutation();
 
   return (
     <Container className="max-w-[880px] pt-5 pb-14 md:pt-11">
@@ -38,7 +40,7 @@ export function MyInquiries() {
         ) : session === null ? (
           <Empty
             title="로그인하면 문의 내역을 볼 수 있어요"
-            description="비회원 문의의 답변은 입력한 이메일로 보내드려요"
+            description="문의하고 받은 답변을 여기서 확인해요"
             action={{ href: "/login", label: "로그인" }}
           />
         ) : inquiries.isError ? (
@@ -57,11 +59,21 @@ export function MyInquiries() {
               const chip = inquiryStatusChip[item.status];
               return (
                 <li key={item.id}>
-                  <details className="group">
+                  <details
+                    className="group"
+                    onToggle={(event) => {
+                      if (event.currentTarget.open && item.unread && !markRead.isPending) markRead.mutate(item.id);
+                    }}
+                  >
                     <summary className="flex cursor-pointer list-none items-center gap-3 py-4 [&::-webkit-details-marker]:hidden">
                       <span className={cn("inline-flex h-6 shrink-0 items-center rounded-md px-2 text-[12px] font-bold", chip.className)}>
                         {chip.label}
                       </span>
+                      {item.unread && (
+                        <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-soon px-1.5 text-[11px] font-extrabold text-white">
+                          NEW
+                        </span>
+                      )}
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[15px] font-bold">{item.title}</span>
                         <span className="mt-0.5 block text-[12.5px] text-faint">

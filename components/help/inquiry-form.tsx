@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, LogIn } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 
 import { useCreateInquiryMutation } from "@/hooks/mutations/support/useCreateInquiryMutation";
@@ -19,9 +19,8 @@ import { cn } from "@/lib/utils";
 
 const inputClass =
   "w-full rounded-[12px] border border-[#E1E1E1] bg-white px-3.5 text-[15px] outline-none placeholder:text-faint focus:border-ink";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// 1:1 문의 보내기. 비회원은 답변 받을 이메일과 개인정보 수집 동의가 필요하다
+// 1:1 문의 보내기. 로그인한 회원만 보낼 수 있고, 답변은 내 문의 내역과 헤더 알림에서 확인한다
 export function InquiryForm({ session }: { session: Session | null | undefined }) {
   const params = useSearchParams();
   const create = useCreateInquiryMutation();
@@ -29,29 +28,41 @@ export function InquiryForm({ session }: { session: Session | null | undefined }
   const [type, setType] = useState<InquiryType | null>(initialType);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [email, setEmail] = useState("");
-  const [agreed, setAgreed] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const guest = session === null;
-  const loginEmail = session?.user.email ?? null;
-  const trimmedEmail = email.trim();
-  // 회원은 비우면 로그인 이메일로 받는다. 로그인 이메일이 없는 계정은 입력해야 한다
-  const emailNeeded = guest || !loginEmail;
-  const emailValid = trimmedEmail === "" ? !emailNeeded : EMAIL_RE.test(trimmedEmail);
-  const valid =
-    type !== null &&
-    title.trim().length >= 2 &&
-    content.trim().length >= INQUIRY_CONTENT_MIN &&
-    emailValid &&
-    (!guest || agreed);
+  const valid = type !== null && title.trim().length >= 2 && content.trim().length >= INQUIRY_CONTENT_MIN;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!valid || !type || create.isPending) return;
     create.mutate(
-      { type, title: title.trim(), content: content.trim(), ...(trimmedEmail ? { email: trimmedEmail } : {}) },
+      { type, title: title.trim(), content: content.trim() },
       { onSuccess: () => setSent(true) },
+    );
+  }
+
+  if (session === null) {
+    return (
+      <div className="flex flex-col items-center py-14 text-center">
+        <span className="flex size-14 items-center justify-center rounded-full bg-surface">
+          <LogIn size={22} />
+        </span>
+        <h2 className="mt-5 text-[21px] font-extrabold tracking-[-0.04em]">로그인하고 문의해주세요</h2>
+        <p className="mt-2 text-[15px] leading-[1.6] text-sub">
+          답변은 마이페이지 문의 내역과
+          <br />
+          헤더 알림에서 바로 확인할 수 있어요
+        </p>
+        <div className="mt-7 flex gap-2">
+          <Link href="/login" className="flex h-11 items-center rounded-full bg-ink px-6 text-[14px] font-bold text-white">
+            로그인
+          </Link>
+          <Link href="/signup" className="flex h-11 items-center rounded-full border border-[#E4E4E4] px-6 text-[14px] font-bold">
+            회원가입
+          </Link>
+        </div>
+        <p className="mt-6 text-[13px] text-faint">계정이 없는 업체는 페이지 아래 contact 메일로 보내주세요</p>
+      </div>
     );
   }
 
@@ -61,26 +72,14 @@ export function InquiryForm({ session }: { session: Session | null | undefined }
         <CircleCheck size={40} className="text-brand" strokeWidth={1.8} />
         <h2 className="mt-4 text-[21px] font-extrabold tracking-[-0.04em]">문의를 보냈어요</h2>
         <p className="mt-2 text-[15px] leading-[1.6] text-sub">
-          {guest ? (
-            <>
-              영업일 기준 1~2일 안에
-              <br />
-              {trimmedEmail} 로 답변드릴게요
-            </>
-          ) : (
-            <>
-              답변이 달리면 내 문의 내역에서 볼 수 있어요
-              <br />
-              보통 영업일 기준 1~2일 걸려요
-            </>
-          )}
+          답변이 달리면 헤더 알림과 내 문의 내역에서 볼 수 있어요
+          <br />
+          보통 영업일 기준 1~2일 걸려요
         </p>
         <div className="mt-7 flex gap-2">
-          {!guest && (
-            <Link href="/help/inquiries" className="flex h-11 items-center rounded-full bg-ink px-5 text-[14px] font-bold text-white">
-              내 문의 내역
-            </Link>
-          )}
+          <Link href="/help/inquiries" className="flex h-11 items-center rounded-full bg-ink px-5 text-[14px] font-bold text-white">
+            내 문의 내역
+          </Link>
           <button
             onClick={() => {
               setSent(false);
@@ -99,16 +98,6 @@ export function InquiryForm({ session }: { session: Session | null | undefined }
 
   return (
     <form onSubmit={submit} className="max-w-[640px]">
-      {guest && (
-        <p className="mb-5 rounded-[12px] bg-surface px-4 py-3 text-[13.5px] leading-[1.55] text-[#444]">
-          로그인하지 않아도 문의할 수 있어요. 답변은 입력한 이메일로 보내드려요.{" "}
-          <Link href="/login" className="font-bold text-ink underline underline-offset-2">
-            로그인
-          </Link>
-          하면 답변을 문의 내역에서 볼 수 있어요.
-        </p>
-      )}
-
       <p className="text-[14px] font-bold">문의 유형</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {inquiryTypes.map(({ value, label }) => (
@@ -158,37 +147,6 @@ export function InquiryForm({ session }: { session: Session | null | undefined }
       <p className="text-right text-[12px] text-faint tabular-nums">
         {content.trim().length}/{INQUIRY_CONTENT_MAX}
       </p>
-
-      <label htmlFor="inquiry-email" className="mt-4 block text-[14px] font-bold">
-        답변 받을 이메일{!emailNeeded && <span className="ml-1 font-medium text-faint">(선택)</span>}
-      </label>
-      <input
-        id="inquiry-email"
-        type="email"
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        autoComplete="email"
-        placeholder={loginEmail && !guest ? `비우면 ${loginEmail} 로 받아요` : "example@email.com"}
-        className={cn(inputClass, "mt-2 h-12")}
-      />
-      {trimmedEmail !== "" && !emailValid && (
-        <p className="mt-1.5 text-[13px] font-semibold text-soon">이메일 형식이 맞지 않아요</p>
-      )}
-
-      {guest && (
-        <label className="mt-5 flex cursor-pointer items-start gap-2.5">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(event) => setAgreed(event.target.checked)}
-            className="mt-0.5 size-[18px] accent-ink"
-          />
-          <span className="text-[13.5px] leading-[1.55] text-[#444]">
-            <span className="font-bold text-ink">(필수) 개인정보 수집·이용에 동의해요.</span> 문의 답변을 위해 이메일을 받고,
-            답변 후 1년 동안 보관한 뒤 지워요.
-          </span>
-        </label>
-      )}
 
       {create.isError && (
         <p role="alert" className="mt-4 text-[13.5px] font-semibold text-soon">

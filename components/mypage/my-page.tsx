@@ -15,6 +15,7 @@ import { SeminarListItem } from "@/components/seminar/seminar-list-item";
 import { SeminarCardSkeleton, SeminarListItemSkeleton, SkeletonList } from "@/components/seminar/seminar-skeleton";
 import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
 import { useBookmarksQuery } from "@/hooks/queries/bookmark/useBookmarksQuery";
+import { useUnreadAnswersQuery } from "@/hooks/queries/support/useUnreadAnswersQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { reviewStage, type SavedSeminar } from "@/lib/reviews";
@@ -36,6 +37,7 @@ export function MyPage() {
   const session = useSession();
   const { data: user } = useUserQuery(Boolean(session));
   const bookmarks = useBookmarksQuery(Boolean(session));
+  const unreadAnswers = useUnreadAnswersQuery(Boolean(session));
   const logout = useLogoutMutation();
 
   if (session === undefined) return <MyPageSkeleton />;
@@ -53,7 +55,13 @@ export function MyPage() {
     { label: "저장한 세미나", icon: Bookmark, href: "#saved", badge: String(items.length) },
     { label: "알림 조건", icon: Bell, href: "/alerts", badge: "준비 중" },
     { label: "수강 후기", icon: MessageSquareText, href: "/reviews", badge: reviewsWaiting > 0 ? `${reviewsWaiting}개 대기` : "" },
-    { label: "1:1 문의 내역", icon: MessagesSquare, href: "/help/inquiries", badge: "" },
+    {
+      label: "1:1 문의 내역",
+      icon: MessagesSquare,
+      href: "/help/inquiries",
+      badge: unreadAnswers.data ? `새 답변 ${unreadAnswers.data}개` : "",
+      highlight: Boolean(unreadAnswers.data),
+    },
     { label: "고객센터", icon: Headset, href: "/help", badge: "" },
   ];
 
@@ -210,7 +218,19 @@ function EmptySaved({ filtered }: { filtered: boolean }) {
   );
 }
 
-function MenuLink({ label, icon: Icon, href, badge }: { label: string; icon: typeof Bell; href: string; badge: string }) {
+function MenuLink({
+  label,
+  icon: Icon,
+  href,
+  badge,
+  highlight = false,
+}: {
+  label: string;
+  icon: typeof Bell;
+  href: string;
+  badge: string;
+  highlight?: boolean;
+}) {
   return (
     <Link
       href={href}
@@ -218,7 +238,7 @@ function MenuLink({ label, icon: Icon, href, badge }: { label: string; icon: typ
     >
       <Icon size={18} strokeWidth={1.9} className="text-[#555]" />
       <span className="flex-1">{label}</span>
-      <span className="text-[12.5px] font-medium text-faint">{badge}</span>
+      <span className={cn("text-[12.5px] font-medium", highlight ? "font-bold text-soon" : "text-faint")}>{badge}</span>
       <ChevronRight size={16} className="text-faint" />
     </Link>
   );
