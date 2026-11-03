@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Bookmark, ChevronRight, Headset, LogOut, MessageSquareText, MessagesSquare } from "lucide-react";
+import { Bell, Bookmark, ChevronRight, Headset, LogOut, MessageSquareText, MessagesSquare, UserX } from "lucide-react";
 
 import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
@@ -14,6 +14,7 @@ import { SeminarCard } from "@/components/seminar/seminar-card";
 import { SeminarListItem } from "@/components/seminar/seminar-list-item";
 import { SeminarCardSkeleton, SeminarListItemSkeleton, SkeletonList } from "@/components/seminar/seminar-skeleton";
 import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
+import { useWithdrawMutation } from "@/hooks/mutations/user/useWithdrawMutation";
 import { useBookmarksQuery } from "@/hooks/queries/bookmark/useBookmarksQuery";
 import { useUnreadAnswersQuery } from "@/hooks/queries/support/useUnreadAnswersQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
@@ -39,6 +40,7 @@ export function MyPage() {
   const bookmarks = useBookmarksQuery(Boolean(session));
   const unreadAnswers = useUnreadAnswersQuery(Boolean(session));
   const logout = useLogoutMutation();
+  const withdraw = useWithdrawMutation();
 
   if (session === undefined) return <MyPageSkeleton />;
   if (session === null) return <LoginRequired />;
@@ -90,6 +92,7 @@ export function MyPage() {
               <MenuLink key={item.label} {...item} />
             ))}
             <LogoutButton onClick={() => logout.mutate()} disabled={logout.isPending} />
+            <WithdrawButton onConfirm={() => withdraw.mutate()} pending={withdraw.isPending} />
           </nav>
         </aside>
 
@@ -111,6 +114,7 @@ export function MyPage() {
               <MenuLink key={item.label} {...item} />
             ))}
             <LogoutButton onClick={() => logout.mutate()} disabled={logout.isPending} />
+            <WithdrawButton onConfirm={() => withdraw.mutate()} pending={withdraw.isPending} />
           </nav>
         </div>
       </div>
@@ -255,6 +259,50 @@ function LogoutButton({ onClick, disabled }: { onClick: () => void; disabled: bo
       <LogOut size={18} strokeWidth={1.9} />
       로그아웃
     </button>
+  );
+}
+
+// 실수로 누르지 않도록 한 번 더 확인한 뒤 탈퇴한다
+function WithdrawButton({ onConfirm, pending }: { onConfirm: () => void; pending: boolean }) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="flex h-12 w-full items-center gap-3 rounded-[10px] text-[15px] font-semibold text-faint md:-mx-2 md:w-[calc(100%+16px)] md:px-2 md:hover:bg-surface"
+      >
+        <UserX size={18} strokeWidth={1.9} />
+        회원 탈퇴
+      </button>
+    );
+  }
+  return (
+    <div className="rounded-[10px] bg-surface p-4 md:-mx-2">
+      <p className="text-[14px] font-bold text-ink">정말 탈퇴할까요?</p>
+      <p className="mt-1 text-[13px] leading-[1.55] text-sub">
+        저장한 세미나, 수강 후기, 작성한 글과 댓글, 면허 인증과 문의 내역이 모두 삭제되고 되돌릴 수 없어요.
+      </p>
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setConfirming(false)}
+          disabled={pending}
+          className="h-10 flex-1 rounded-full border border-[#DEDEDE] bg-white text-[14px] font-bold text-ink"
+        >
+          취소
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={pending}
+          className="h-10 flex-1 rounded-full bg-soon text-[14px] font-bold text-white disabled:opacity-60"
+        >
+          {pending ? "탈퇴 중…" : "탈퇴하기"}
+        </button>
+      </div>
+    </div>
   );
 }
 
