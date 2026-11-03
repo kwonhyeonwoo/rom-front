@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ComingSoon } from "@/components/layout/coming-soon";
 
 export const metadata: Metadata = {
-  title: "개인정보처리방침 · 롬",
+  title: "개인정보처리방침",
 };
 
 export default function PrivacyPage() {

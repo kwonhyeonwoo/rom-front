@@ -5,7 +5,7 @@ import { HelpPage } from "@/components/help/help-page";
 import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
-  title: "고객센터 · 롬",
+  title: "고객센터",
 };
 
 export default function HelpRoute() {

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
 
 export const metadata: Metadata = {
+  title: { default: "롬 관리자", template: "%s · 롬 관리자" },
   robots: { index: false, follow: false },
 };
 

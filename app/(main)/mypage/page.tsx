@@ -4,7 +4,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { MyPage } from "@/components/mypage/my-page";
 
 export const metadata: Metadata = {
-  title: "마이페이지 · 롬",
+  title: "마이페이지",
+  robots: { index: false, follow: false },
 };
 
 export default function MyPageRoute() {

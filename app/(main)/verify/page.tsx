@@ -4,7 +4,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { VerifyForm } from "@/components/verification/verify-form";
 
 export const metadata: Metadata = {
-  title: "면허 인증 · 롬",
+  title: "면허 인증",
+  robots: { index: false, follow: false },
 };
 
 export default function VerifyRoute() {

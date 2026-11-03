@@ -6,7 +6,8 @@ import { PostForm } from "@/components/community/post-form";
 import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
-  title: "글쓰기 · 롬",
+  title: "글쓰기",
+  robots: { index: false, follow: false },
 };
 
 export default function WritePostRoute() {

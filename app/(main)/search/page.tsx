@@ -9,7 +9,9 @@ import { SearchResults } from "@/components/search/search-results";
 import { parseFilters } from "@/lib/search";
 
 export const metadata: Metadata = {
-  title: "세미나 검색 · 롬",
+  title: "세미나 검색",
+  description:
+    "분야·지역·주말·가격·보수교육 인정 여부로 물리치료 세미나를 한 번에 찾아보세요. 마감 임박 세미나도 바로 보여드려요.",
 };
 
 export default function SearchPage({ searchParams }: PageProps<"/search">) {

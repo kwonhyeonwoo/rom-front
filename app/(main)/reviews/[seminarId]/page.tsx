@@ -6,7 +6,8 @@ import { ReviewWritePage } from "@/components/review/review-write-page";
 import { ReviewsSkeleton } from "@/components/review/reviews-page";
 
 export const metadata: Metadata = {
-  title: "후기 쓰기 · 롬",
+  title: "후기 쓰기",
+  robots: { index: false, follow: false },
 };
 
 export default function ReviewWriteRoute({ params }: PageProps<"/reviews/[seminarId]">) {

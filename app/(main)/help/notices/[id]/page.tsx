@@ -5,7 +5,7 @@ import { NoticeDetail } from "@/components/help/notice-detail";
 import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
-  title: "공지사항 · 롬",
+  title: "공지사항",
 };
 
 export default function NoticeRoute({ params }: PageProps<"/help/notices/[id]">) {
