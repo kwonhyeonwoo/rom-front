@@ -57,6 +57,8 @@ export type Seminar = {
   closingSoon: boolean;
   poster: Poster;
   url: string;
+  // 수집한 원문 주소. 출처 표시용
+  sourceUrl: string;
 };
 
 export const posterThemes: Record<
@@ -130,6 +132,7 @@ export function toSeminar(api: ApiSeminar): Seminar {
       theme: poster.theme,
     },
     url: api.applyUrl ?? api.sourceUrl,
+    sourceUrl: api.sourceUrl,
   };
 }
 

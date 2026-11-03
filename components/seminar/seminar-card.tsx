@@ -37,7 +37,7 @@ export function SeminarCard({
         <BookmarkButton seminarId={seminar.id} className="absolute top-2.5 right-2.5" />
       </div>
       <div className="flex flex-col gap-1 px-0.5 pt-3">
-        <span className="truncate text-[12.5px] text-sub">{seminar.host}</span>
+        <SourceLink seminar={seminar} className="text-[12.5px]" />
         <h3 className="line-clamp-2 min-h-11 text-base leading-[1.38] font-bold tracking-[-0.03em]">
           <SeminarLink seminar={seminar} />
         </h3>
@@ -59,6 +59,21 @@ export function Credit({ seminar }: { seminar: Seminar }) {
     <span className="text-[12.5px] font-semibold whitespace-nowrap text-brand">
       {seminar.credit ? `보수교육 ${seminar.credit}점` : "보수교육 인정"}
     </span>
+  );
+}
+
+// 주최 이름을 수집한 원문(출처) 링크로 보여 준다
+export function SourceLink({ seminar, className }: { seminar: Seminar; className?: string }) {
+  return (
+    <a
+      href={seminar.sourceUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="출처: 원문 보기"
+      className={cn("truncate text-sub hover:underline", className)}
+    >
+      {seminar.host}
+    </a>
   );
 }
 

@@ -2,7 +2,7 @@ import { formatPrice, type Seminar } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
 import { BookmarkButton } from "./bookmark-button";
 import { DDay } from "./dday";
-import { Credit, SeminarLink } from "./seminar-card";
+import { Credit, SeminarLink, SourceLink } from "./seminar-card";
 import { SeminarPoster } from "./seminar-poster";
 
 // 포스터가 왼쪽에 있는 가로형 목록 아이템 (모바일)
@@ -14,7 +14,7 @@ export function SeminarListItem({ seminar, className }: { seminar: Seminar; clas
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-xs text-sub">{seminar.host}</span>
+          <SourceLink seminar={seminar} className="text-xs" />
           <BookmarkButton seminarId={seminar.id} variant="plain" className="-my-1.5 -mr-1.5 shrink-0" />
         </div>
         <h3 className="line-clamp-2 text-[15px] leading-[1.38] font-bold tracking-[-0.03em]">
