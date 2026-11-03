@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Provider } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 
 const button =
   "flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl text-[15.5px] font-bold disabled:opacity-60";
@@ -15,7 +15,6 @@ export function SocialLoginButtons({
 }: {
   action: "로그인" | "시작하기";
 }) {
-  const router = useRouter();
   const [pending, setPending] = useState<Provider | null>(null);
   const [error, setError] = useState(false);
 
@@ -26,12 +25,11 @@ export function SocialLoginButtons({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    router.push("/");
-    // 성공하면 카카오·구글 화면으로 이동하므로 실패했을 때만 상태를 되돌린다
+    // 성공하면 브라우저가 카카오·구글 화면으로 넘어가므로 실패했을 때만 상태를 되돌린다.
+    // (여기서 router.push를 하면 카카오 화면으로 가기 전에 홈으로 튕겨 로그인이 끊긴다)
     if (error) {
       setPending(null);
       setError(true);
-      console.log("error", error);
     }
   };
 
@@ -55,13 +53,28 @@ export function SocialLoginButtons({
         <GoogleIcon />
         Google로 {action}
       </button>
-      {error && (
-        <p className="text-[13px] text-soon">
-          로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.
-        </p>
+      {error ? (
+        <ErrorText />
+      ) : (
+        <Suspense fallback={null}>
+          <CallbackError />
+        </Suspense>
       )}
     </div>
   );
+}
+
+function ErrorText() {
+  return (
+    <p className="text-[13px] text-soon">
+      로그인하지 못했어요. 잠시 후 다시 시도해주세요.
+    </p>
+  );
+}
+
+// 콜백(/auth/callback)에서 로그인이 실패하면 /login?error=oauth 로 돌아온다 (카카오 동의 취소 등)
+function CallbackError() {
+  return useSearchParams().get("error") === "oauth" ? <ErrorText /> : null;
 }
 
 function KakaoIcon() {

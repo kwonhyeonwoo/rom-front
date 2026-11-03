@@ -20,7 +20,7 @@ import { useUnreadAnswersQuery } from "@/hooks/queries/support/useUnreadAnswersQ
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { reviewStage, type SavedSeminar } from "@/lib/reviews";
-import { cn } from "@/lib/utils";
+import { cn, sessionUserName } from "@/lib/utils";
 
 const providerLabels: Record<string, string> = {
   google: "Google 계정",
@@ -45,7 +45,7 @@ export function MyPage() {
   if (session === undefined) return <MyPageSkeleton />;
   if (session === null) return <LoginRequired />;
 
-  const name = user?.name ?? session.user.email?.split("@")[0] ?? "회원";
+  const name = sessionUserName(user, session.user);
   const email = user?.email ?? session.user.email ?? null;
   const provider = user?.provider ?? session.user.app_metadata.provider ?? null;
   const items = bookmarks.data ?? [];
