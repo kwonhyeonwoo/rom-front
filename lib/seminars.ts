@@ -17,7 +17,6 @@ export type ApiSeminar = {
   sourceUrl: string;
   title: string;
   host: string | null;
-  instructors: string[];
   categories: string[];
   startDate: string | null;
   endDate: string | null;

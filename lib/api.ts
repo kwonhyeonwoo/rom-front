@@ -23,6 +23,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 
   const res = await fetch(`${API_URL}${path}`, { ...init, headers });
   if (!res.ok) throw new ApiError(res.status, await res.text());
+  // 본문이 없는 응답(204)은 json()이 실패하므로 그대로 비워 돌려준다
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 

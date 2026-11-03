@@ -32,7 +32,7 @@ export function HeroSearch() {
         <input
           name="q"
           aria-label="세미나 검색"
-          placeholder="세미나명, 강사, 학회로 검색해보세요"
+          placeholder="세미나명, 학회로 검색해보세요"
           className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-faint md:text-[16.5px]"
         />
         <button

@@ -33,7 +33,7 @@ export function HeaderSearchForm({ filters }: { filters: SearchFilters }) {
         name="q"
         defaultValue={filters.q}
         aria-label="세미나 검색"
-        placeholder="세미나명, 강사, 학회"
+        placeholder="세미나명, 학회"
         className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-faint"
       />
       <KeptFilters filters={filters} />
@@ -58,7 +58,7 @@ export function MobileSearchHeader({ filters }: { filters: SearchFilters }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           aria-label="세미나 검색"
-          placeholder="세미나명, 강사, 학회 검색"
+          placeholder="세미나명, 학회 검색"
           className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-faint"
         />
         <KeptFilters filters={filters} />
