@@ -33,16 +33,16 @@ export function CeCourseSection() {
   );
 }
 
-// 민간교육: 민간교육 사이트(예: 신경조절움직임학회)에서 수집한 교육·자격과정 전체.
-// 지난 교육도 포함해 최근 교육일 순으로 보여 주고, 전체 목록은 더보기에서 본다
+// 민간교육: 민간교육 사이트(신경조절움직임학회, 대한기능도수물리치료학회 등)에서 수집한 교육·자격과정.
+// 이미 끝난 교육은 빼고 교육일이 가까운 순으로 보여 주고, 전체 목록은 더보기에서 본다
 export function PrivateEducationSection() {
   return (
     <GridSection
       title="민간교육"
       description="교육업체·학회가 직접 여는 민간 교육과 자격과정"
-      href="/search?edu=1&past=1&sort=dateDesc"
-      filters={{ privateEdu: true, includePast: true, sort: "dateDesc" }}
-      empty="수집된 민간교육이 아직 없어요."
+      href="/search?edu=1&sort=date"
+      filters={{ privateEdu: true, sort: "date" }}
+      empty="다가오는 민간교육이 없어요."
       size={PRIVATE_SECTION_SIZE}
     />
   );

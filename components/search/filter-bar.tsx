@@ -43,12 +43,9 @@ export function FilterBar({ filters }: { filters: SearchFilters }) {
       <TogglePill
         label="민간교육"
         on={filters.privateEdu}
-        // 민간교육은 지난 교육까지 전체를 보여 준다
+        // 다른 목록처럼 이미 끝난 교육은 숨긴다
         onClick={() =>
-          navigate({
-            privateEdu: !filters.privateEdu,
-            includePast: !filters.privateEdu,
-          })
+          navigate({ privateEdu: !filters.privateEdu, includePast: false })
         }
       />
       <TogglePill
