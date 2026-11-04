@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Provider } from "@supabase/supabase-js";
 
+import { OAUTH_PROVIDER_COOKIE, providerNames } from "@/lib/auth-provider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,8 @@ export function SocialLoginButtons({
   const signIn = async (provider: Provider) => {
     setPending(provider);
     setError(false);
+    // 콜백에서 "다른 방식으로 가입된 이메일"인지 판단할 때 쓴다 (10분 뒤 사라짐)
+    document.cookie = `${OAUTH_PROVIDER_COOKIE}=${provider}; Max-Age=600; Path=/; SameSite=Lax`;
     const { error } = await getSupabaseBrowserClient().auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -72,9 +75,30 @@ function ErrorText() {
   );
 }
 
-// 콜백(/auth/callback)에서 로그인이 실패하면 /login?error=oauth 로 돌아온다 (카카오 동의 취소 등)
+// 콜백(/auth/callback)에서 로그인이 실패하면 /login?error=oauth 로 돌아온다 (카카오 동의 취소 등).
+// 같은 이메일이 다른 소셜 로그인으로 이미 가입돼 있으면 /login?error=linked&provider=google 로 돌아온다
 function CallbackError() {
-  return useSearchParams().get("error") === "oauth" ? <ErrorText /> : null;
+  const params = useSearchParams();
+  const error = params.get("error");
+  if (error === "linked") return <LinkedAccountNotice provider={params.get("provider")} />;
+  return error === "oauth" ? <ErrorText /> : null;
+}
+
+function LinkedAccountNotice({ provider }: { provider: string | null }) {
+  const name = (provider && providerNames[provider]) ?? null;
+  const button = provider === "google" ? "Google" : name;
+  return (
+    <div role="alert" className="mt-1 rounded-xl bg-surface px-4 py-3.5 text-left text-[13.5px] leading-[1.6]">
+      <p className="font-bold text-ink">
+        {name ? `${name}로 가입된 이메일이에요` : "다른 방법으로 가입된 이메일이에요"}
+      </p>
+      <p className="mt-0.5 text-sub">
+        {name
+          ? `같은 이메일로는 계정을 하나만 만들 수 있어요. 위의 ${button} 버튼으로 로그인해주세요.`
+          : "같은 이메일로는 계정을 하나만 만들 수 있어요. 처음 가입한 방법으로 로그인해주세요."}
+      </p>
+    </div>
+  );
 }
 
 function KakaoIcon() {
