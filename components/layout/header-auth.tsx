@@ -18,7 +18,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
   const session = useSession();
   const { data: user } = useUserQuery(Boolean(session));
   const logout = useLogoutMutation();
-  const { access } = useVerifyAccess();
+  const { access, operator } = useVerifyAccess();
 
   // 세션 확인 전에는 버튼 자리만 비워 깜빡임을 줄인다
   if (session === undefined) return <div className={mobile ? "h-[34px]" : "h-10"} />;
@@ -28,7 +28,7 @@ export function HeaderAuth({ mobile = false }: { mobile?: boolean }) {
     return (
       <div className="flex items-center gap-1.5">
         <NotificationBell mobile={mobile} />
-        <VerifyChip access={access} className={mobile ? "h-6 px-2 text-[11px]" : undefined} />
+        <VerifyChip access={access} operator={operator} className={mobile ? "h-6 px-2 text-[11px]" : undefined} />
         {/* 이름(모바일은 프로필 동그라미)을 누르면 마이페이지 */}
         <Link
           href="/mypage"

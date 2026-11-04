@@ -59,6 +59,12 @@ export type Post = {
   content: string;
   authorName: string;
   anonymous: boolean;
+  // 운영 계정이 쓴 글 ("ROM 운영팀" 배지)
+  byOperator: boolean;
+  // 첫 글 이벤트 참여 글
+  eventEntry: boolean;
+  // 게시 시각(createdAt)이 아직 오지 않은 예약 글. 작성자에게만 내려온다
+  scheduled: boolean;
   mine: boolean;
   liked: boolean;
   likeCount: number;
@@ -75,6 +81,7 @@ export type PostComment = {
   content: string;
   authorName: string;
   anonymous: boolean;
+  byOperator: boolean;
   mine: boolean;
   byAuthor: boolean;
   createdAt: string;
@@ -91,6 +98,9 @@ export type PostPage = {
 };
 
 export const POST_TITLE_MAX = 100;
+// 운영 계정의 예약 게시는 90일 안으로 (서버와 같은 값)
+export const SCHEDULE_MAX_DAYS = 90;
+export const OPERATOR_NAME = "ROM 운영팀";
 export const POST_CONTENT_MIN = 5;
 export const POST_CONTENT_MAX = 5000;
 export const COMMENT_MAX = 1000;
@@ -107,6 +117,13 @@ export function previewName(
   return chars.length <= 1
     ? base
     : chars[0] + "○".repeat(Math.min(chars.length - 1, 3));
+}
+
+// 예약 게시 시각: "11.10 09:00" (한국 시간)
+export function formatPublishAt(iso: string) {
+  const kst = new Date(new Date(iso).getTime() + 9 * 3_600_000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${kst.getUTCMonth() + 1}.${kst.getUTCDate()} ${pad(kst.getUTCHours())}:${pad(kst.getUTCMinutes())}`;
 }
 
 // "방금 전", "12분 전", "3시간 전", 하루가 지나면 날짜

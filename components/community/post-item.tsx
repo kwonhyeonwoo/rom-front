@@ -5,6 +5,7 @@ import { StarRating } from "@/components/review/star-rating";
 import { boardLabel, timeAgo, type Post } from "@/lib/community";
 import { formatSchedule } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
+import { EventTag, OperatorBadge, ScheduledTag } from "./post-badges";
 
 export function BoardTag({
   board,
@@ -31,7 +32,11 @@ export function PostItem({ post }: { post: Post }) {
   return (
     <article className="border-b border-line">
       <Link href={`/community/${post.id}`} className="block py-4 md:py-5">
-        <BoardTag board={post.board} />
+        <div className="flex flex-wrap items-center gap-1.5">
+          <BoardTag board={post.board} />
+          {post.eventEntry && <EventTag />}
+          {post.scheduled && <ScheduledTag at={post.createdAt} />}
+        </div>
         <h3 className="mt-1.5 line-clamp-2 text-[15.5px] leading-[1.4] font-bold tracking-[-0.03em] md:text-[16.5px]">
           {post.title}
         </h3>
@@ -58,8 +63,13 @@ export function PostItem({ post }: { post: Post }) {
         )}
         <div className="mt-2.5 flex items-center gap-1.5 text-xs text-faint">
           <b className="font-semibold text-[#333]">{post.authorName}</b>
-          <span>·</span>
-          <span>{timeAgo(post.createdAt)}</span>
+          {post.byOperator && <OperatorBadge />}
+          {!post.scheduled && (
+            <>
+              <span>·</span>
+              <span>{timeAgo(post.createdAt)}</span>
+            </>
+          )}
           <span className="ml-auto flex items-center gap-2.5">
             <span className="flex items-center gap-1">
               <Heart size={13} strokeWidth={1.8} />

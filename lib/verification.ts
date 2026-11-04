@@ -7,6 +7,8 @@ export type Verification = {
   rejectReason: string | null;
   requestedAt: string | null;
   reviewedAt: string | null;
+  // 운영 계정이면 true. 면허 인증 없이 커뮤니티에 쓰고, 글을 예약 게시할 수 있다
+  operator?: boolean;
 };
 
 // 비로그인(GUEST)과 아직 확인 중(LOADING)까지 포함한 화면용 상태
