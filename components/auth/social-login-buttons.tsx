@@ -8,6 +8,9 @@ import { OAUTH_PROVIDER_COOKIE, providerNames } from "@/lib/auth-provider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
+// 카카오 콘솔에서 전화번호 동의항목을 켠 뒤에만 켠다. 켜지 않은 채 요청하면 카카오가 로그인을 막는다(KOE205)
+const KAKAO_PHONE_SCOPE = process.env.NEXT_PUBLIC_KAKAO_PHONE_SCOPE === "true";
+
 const button =
   "flex h-[54px] w-full items-center justify-center gap-2.5 rounded-xl text-[15.5px] font-bold disabled:opacity-60";
 
@@ -26,7 +29,11 @@ export function SocialLoginButtons({
     document.cookie = `${OAUTH_PROVIDER_COOKIE}=${provider}; Max-Age=600; Path=/; SameSite=Lax`;
     const { error } = await getSupabaseBrowserClient().auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        // 카카오는 전화번호 제공 동의도 받는다. 콜백이 받은 번호를 rom-back에 저장한다
+        ...(provider === "kakao" && KAKAO_PHONE_SCOPE ? { scopes: "phone_number" } : {}),
+      },
     });
     // 성공하면 브라우저가 카카오·구글 화면으로 넘어가므로 실패했을 때만 상태를 되돌린다.
     // (여기서 router.push를 하면 카카오 화면으로 가기 전에 홈으로 튕겨 로그인이 끊긴다)
