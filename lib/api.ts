@@ -28,6 +28,14 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   return res.json() as Promise<T>;
 }
 
+// 페이지를 열자마자 잠든 서버를 깨운다. 실제 데이터 요청보다 먼저 출발해 첫 화면 대기 시간을 줄인다
+let warmed = false;
+export function warmUpApi() {
+  if (warmed) return;
+  warmed = true;
+  fetch(`${API_URL}/health`, { cache: "no-store" }).catch(() => {});
+}
+
 // rom-back 오류 응답({ message })에서 사용자에게 보여줄 문구를 꺼낸다
 export function apiErrorMessage(error: unknown, fallback: string) {
   if (!(error instanceof ApiError)) return fallback;
