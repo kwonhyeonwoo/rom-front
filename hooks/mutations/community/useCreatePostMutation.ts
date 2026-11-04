@@ -9,6 +9,10 @@ type Variables = {
   content: string;
   anonymous: boolean;
   seminarId?: string;
+  // 분야 태그 (최대 3개)
+  fields?: string[];
+  // useUploadPostImageMutation으로 올린 사진 경로
+  images?: string[];
   // 예약 게시 시각 (ISO). 운영 계정만
   publishAt?: string;
 };

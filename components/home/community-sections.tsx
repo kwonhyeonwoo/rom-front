@@ -11,7 +11,7 @@ import { WriteButton } from "@/components/verification/write-button";
 import { useCommunitySummaryQuery } from "@/hooks/queries/community/useCommunitySummaryQuery";
 import { usePostsQuery } from "@/hooks/queries/community/usePostsQuery";
 import { useSession } from "@/hooks/useSession";
-import { boards, timeAgo, type Board, type Post } from "@/lib/community";
+import { boards, plainContent, timeAgo, type Board, type Post } from "@/lib/community";
 import type { Poster } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
@@ -149,7 +149,7 @@ export function LatestPostsSection() {
                     <BoardTag board={post.board} />
                     <h3 className="truncate text-[15px] font-bold tracking-[-0.03em] md:text-base">{post.title}</h3>
                   </div>
-                  <p className="mt-1.5 truncate text-[13px] text-sub md:text-sm">{post.content}</p>
+                  <p className="mt-1.5 truncate text-[13px] text-sub md:text-sm">{plainContent(post.content)}</p>
                   <div className="mt-2 flex items-center justify-between gap-3 text-xs">
                     <span className="flex min-w-0 items-center gap-1.5">
                       <b className="font-semibold text-[#333]">{post.authorName}</b>

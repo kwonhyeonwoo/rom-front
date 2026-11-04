@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Heart, Link2, MessageCircle, Star } from "lucide-react";
+import { Heart, Image as ImageIcon, Link2, MessageCircle, Star } from "lucide-react";
 
 import { StarRating } from "@/components/review/star-rating";
-import { boardLabel, timeAgo, type Post } from "@/lib/community";
+import { boardLabel, plainContent, timeAgo, type Post } from "@/lib/community";
 import { formatSchedule } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
 import { EventTag, OperatorBadge, ScheduledTag } from "./post-badges";
@@ -27,6 +27,15 @@ export function BoardTag({
   );
 }
 
+// 글 분야 태그 (도수치료, 테이핑 …)
+export function FieldTag({ field }: { field: string }) {
+  return (
+    <span className="inline-flex h-[22px] items-center rounded-md border border-[#E4E4E4] px-1.5 text-[11.5px] font-medium whitespace-nowrap text-sub">
+      #{field}
+    </span>
+  );
+}
+
 // 글 목록 한 줄. 세미나 후기 글에는 연결된 세미나가 칩으로 붙는다
 export function PostItem({ post }: { post: Post }) {
   return (
@@ -36,6 +45,9 @@ export function PostItem({ post }: { post: Post }) {
           <BoardTag board={post.board} />
           {post.eventEntry && <EventTag />}
           {post.scheduled && <ScheduledTag at={post.createdAt} />}
+          {post.fields.map((field) => (
+            <FieldTag key={field} field={field} />
+          ))}
         </div>
         <h3 className="mt-1.5 line-clamp-2 text-[15.5px] leading-[1.4] font-bold tracking-[-0.03em] md:text-[16.5px]">
           {post.title}
@@ -44,7 +56,7 @@ export function PostItem({ post }: { post: Post }) {
           <StarRating value={post.rating} size={13} className="mt-1.5" />
         )}
         <p className="mt-1 line-clamp-2 text-[13.5px] leading-[1.55] text-sub md:text-sm">
-          {post.content}
+          {plainContent(post.content)}
         </p>
         {post.seminar && (
           <span className="mt-2.5 flex h-[30px] w-fit max-w-full items-center gap-1.5 rounded-lg bg-surface px-2.5 text-[12.5px] text-[#444]">
@@ -71,6 +83,12 @@ export function PostItem({ post }: { post: Post }) {
             </>
           )}
           <span className="ml-auto flex items-center gap-2.5">
+            {post.images.length > 0 && (
+              <span className="flex items-center gap-1">
+                <ImageIcon size={13} strokeWidth={1.8} />
+                {post.images.length}
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <Heart size={13} strokeWidth={1.8} />
               {post.likeCount}

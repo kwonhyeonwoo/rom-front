@@ -28,7 +28,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/stores/use-toast-store";
 import { VerifyBanner } from "@/components/verification/verify-banner";
 import { CommunitySkeleton } from "./login-required";
-import { BoardTag } from "./post-item";
+import { PostContent, PostImages } from "./post-content";
+import { BoardTag, FieldTag } from "./post-item";
 import { EventTag, OperatorBadge, ScheduledTag } from "./post-badges";
 
 export function PostDetail({ postId }: { postId: string }) {
@@ -126,6 +127,9 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
           <BoardTag board={post.board} />
           {post.eventEntry && <EventTag />}
           {post.scheduled && <ScheduledTag at={post.createdAt} />}
+          {post.fields.map((field) => (
+            <FieldTag key={field} field={field} />
+          ))}
         </div>
         <h1 className="mt-2 text-[22px] leading-[1.4] font-extrabold tracking-[-0.04em] md:text-[28px]">
           {post.title}
@@ -212,9 +216,8 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
           </div>
         )}
 
-        <div className="mt-6 text-[15.5px] leading-[1.85] whitespace-pre-line text-[#222]">
-          {post.content}
-        </div>
+        <PostContent content={post.content} className="mt-6" />
+        <PostImages images={post.images} />
 
         <div className="mt-8 flex justify-center">
           <button
