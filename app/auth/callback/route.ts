@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { OAUTH_PROVIDER_COOKIE } from "@/lib/auth-provider";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+type SignInCheck = { allowed: true } | { allowed: false; provider: string };
 
 // 카카오·구글 로그인 후 Supabase가 돌려보내는 곳. code를 세션으로 바꾸고 원래 가려던 곳으로 보낸다.
 export async function GET(request: NextRequest) {
@@ -9,12 +14,42 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/";
   // 외부 주소로 튕겨나가지 않도록 내부 경로만 허용
   const redirectPath = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const usedProvider = request.cookies.get(OAUTH_PROVIDER_COOKIE)?.value;
 
+  let target = new URL("/login?error=oauth", origin);
   if (code) {
     const supabase = await getSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(redirectPath, origin));
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      const check = await checkSignIn(data.session.access_token, usedProvider);
+      if (check.allowed) {
+        target = new URL(redirectPath, origin);
+      } else {
+        // 같은 이메일이 다른 방식으로 이미 가입돼 있다. 이 로그인은 끊고 가입한 방식을 안내한다
+        await supabase.auth.signOut({ scope: "local" });
+        target = new URL(`/login?error=linked&provider=${encodeURIComponent(check.provider)}`, origin);
+      }
+    }
   }
 
-  return NextResponse.redirect(new URL("/login?error=oauth", origin));
+  const response = NextResponse.redirect(target);
+  response.cookies.delete(OAUTH_PROVIDER_COOKIE);
+  return response;
+}
+
+// 같은 이메일로 다른 소셜 로그인을 했는지 rom-back에 묻는다.
+// 서버에 닿지 않으면 로그인 자체를 막지 않는다 (다음 로그인 때 다시 확인된다)
+async function checkSignIn(accessToken: string, provider: string | undefined): Promise<SignInCheck> {
+  try {
+    const res = await fetch(`${API_URL}/auth/sign-in-check`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify(provider === "google" || provider === "kakao" ? { provider } : {}),
+      cache: "no-store",
+    });
+    if (!res.ok) return { allowed: true };
+    return (await res.json()) as SignInCheck;
+  } catch {
+    return { allowed: true };
+  }
 }
