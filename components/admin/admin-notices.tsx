@@ -8,7 +8,15 @@ import { useSaveNoticeMutation, type NoticeBody } from "@/hooks/mutations/admin/
 import { useAdminNoticeQuery } from "@/hooks/queries/admin/useAdminNoticeQuery";
 import { useAdminNoticesQuery } from "@/hooks/queries/admin/useAdminNoticesQuery";
 import { apiErrorMessage } from "@/lib/api";
-import { formatDate, NOTICE_CONTENT_MAX, noticeCategories, noticeCategoryLabel, type Notice } from "@/lib/support";
+import {
+  formatDate,
+  NOTICE_CONTENT_MAX,
+  NOTICE_IMPORTANT_CHIP,
+  noticeCategories,
+  noticeCategoryChip,
+  noticeCategoryLabel,
+  type Notice,
+} from "@/lib/support";
 import { cn } from "@/lib/utils";
 import { toast } from "@/stores/use-toast-store";
 
@@ -28,7 +36,7 @@ export function AdminNotices() {
       <div className={cn("flex flex-wrap items-end justify-between gap-3", editing && "hidden md:flex")}>
         <div>
           <h1 className="text-[24px] font-extrabold tracking-[-0.045em] md:text-[30px]">공지사항</h1>
-          <p className="mt-1 text-[14px] text-sub">고객센터 공지 탭에 보여요. 고정한 공지는 메인 상단 띠 배너로도 떠요</p>
+          <p className="mt-1 text-[14px] text-sub">고객센터 공지 탭에 분류별로 보여요. 고정한 공지는 메인 상단 띠 배너로도 떠요</p>
         </div>
         <button
           onClick={() => setEditing("new")}
@@ -66,8 +74,20 @@ export function AdminNotices() {
                       )}
                     >
                       <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-sub">
-                        {item.pinned && <Pin size={12} className="text-soon" aria-label="고정" />}
-                        <span>{noticeCategoryLabel(item.category)}</span>
+                        {item.pinned && <Pin size={12} className="rotate-45 text-ink" aria-label="고정" />}
+                        <span
+                          className={cn(
+                            "inline-flex h-5 items-center rounded px-1.5 text-[11.5px] font-bold",
+                            noticeCategoryChip(item.category),
+                          )}
+                        >
+                          {noticeCategoryLabel(item.category)}
+                        </span>
+                        {item.important && (
+                          <span className={cn("inline-flex h-5 items-center rounded px-1.5 text-[11.5px] font-bold", NOTICE_IMPORTANT_CHIP)}>
+                            중요
+                          </span>
+                        )}
                         <span className="ml-auto font-medium text-faint">{formatDate(item.createdAt)}</span>
                       </div>
                       <p className="mt-1 truncate text-[15px] font-bold">{item.title}</p>
@@ -134,6 +154,7 @@ function NoticeEditor({ notice, onClose }: { notice: Notice | null; onClose: () 
     title: notice?.title ?? "",
     content: notice?.content ?? "",
     pinned: notice?.pinned ?? false,
+    important: notice?.important ?? false,
   });
   const title = form.title.trim();
   const content = form.content.trim();
@@ -175,7 +196,7 @@ function NoticeEditor({ notice, onClose }: { notice: Notice | null; onClose: () 
       <h2 className="text-[20px] font-extrabold tracking-[-0.04em]">{notice ? "공지 고치기" : "새 공지"}</h2>
 
       <p className="mt-5 text-[13.5px] font-bold">분류</p>
-      <div className="mt-2 flex gap-1.5">
+      <div className="mt-2 flex flex-wrap gap-1.5">
         {noticeCategories.map(({ value, label }) => (
           <button
             key={value}
@@ -225,7 +246,20 @@ function NoticeEditor({ notice, onClose }: { notice: Notice | null; onClose: () 
         />
         <span>
           <span className="block text-[14px] font-bold">상단 고정</span>
-          <span className="block text-[12.5px] text-sub">목록 맨 위에 두고, 가장 최근 고정 공지는 메인 상단 띠 배너로 보여요</span>
+          <span className="block text-[12.5px] text-sub">목록 맨 위에 핀과 함께 두고, 가장 최근 고정 공지는 메인 상단 띠 배너로 보여요</span>
+        </span>
+      </label>
+
+      <label className="mt-3 flex cursor-pointer items-start gap-2.5">
+        <input
+          type="checkbox"
+          checked={form.important}
+          onChange={(event) => setForm((f) => ({ ...f, important: event.target.checked }))}
+          className="mt-0.5 size-[18px] accent-ink"
+        />
+        <span>
+          <span className="block text-[14px] font-bold">중요 표시</span>
+          <span className="block text-[12.5px] text-sub">약관 변경, 서비스 중단처럼 꼭 읽어야 하는 글에만 켜주세요. 목록에 빨간 &quot;중요&quot; 칩이 붙어요</span>
         </span>
       </label>
 

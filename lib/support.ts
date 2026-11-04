@@ -1,6 +1,6 @@
 // 고객센터 (rom-back /notices, /inquiries, /admin/inquiries, /admin/notices) 응답 모델과 화면 문구
 
-export type NoticeCategory = "SERVICE" | "MAINTENANCE" | "EVENT";
+export type NoticeCategory = "SERVICE" | "UPDATE" | "EVENT" | "MAINTENANCE";
 export type InquiryType = "ACCOUNT" | "SEMINAR" | "PARTNER" | "ETC";
 export type InquiryStatus = "OPEN" | "ANSWERED";
 
@@ -8,7 +8,10 @@ export type NoticeItem = {
   id: string;
   category: NoticeCategory;
   title: string;
+  // 목록 맨 위 고정 (핀 아이콘). 가장 최근 고정 공지는 메인 띠 배너로도 보인다
   pinned: boolean;
+  // 꼭 읽어야 하는 글에만 켜는 "중요" 표시. 고정과 별개
+  important: boolean;
   createdAt: string;
 };
 
@@ -35,14 +38,28 @@ export type AdminInquiry = Inquiry & { member: boolean; email: string | null; an
 
 export type AdminSummary = { pendingVerifications: number; openInquiries: number };
 
-export const noticeCategories: { value: NoticeCategory; label: string }[] = [
-  { value: "SERVICE", label: "안내" },
-  { value: "MAINTENANCE", label: "점검" },
-  { value: "EVENT", label: "이벤트" },
+// 분류별 칩 색. 필터 탭과 관리자 작성 화면도 이 순서를 따른다
+export const noticeCategories: { value: NoticeCategory; label: string; chip: string }[] = [
+  { value: "SERVICE", label: "안내", chip: "bg-[#EAF1FD] text-[#2F62C4]" },
+  { value: "UPDATE", label: "업데이트", chip: "bg-[#E6F2EF] text-brand" },
+  { value: "EVENT", label: "이벤트", chip: "bg-[#F2ECFC] text-[#6B40C4]" },
+  { value: "MAINTENANCE", label: "점검", chip: "bg-[#FFF4E5] text-[#B25E00]" },
 ];
 
-export const noticeCategoryLabel = (value: NoticeCategory) =>
-  noticeCategories.find((c) => c.value === value)?.label ?? "안내";
+const noticeCategoryOf = (value: NoticeCategory) =>
+  noticeCategories.find((c) => c.value === value) ?? noticeCategories[0];
+
+export const noticeCategoryLabel = (value: NoticeCategory) => noticeCategoryOf(value).label;
+
+export const noticeCategoryChip = (value: NoticeCategory) => noticeCategoryOf(value).chip;
+
+export const NOTICE_IMPORTANT_CHIP = "bg-[#FDECEA] text-soon";
+
+// 제목 앞에 분류를 "[안내]"처럼 직접 적은 글은 칩과 겹치니 화면에서만 뗀다
+export function noticeDisplayTitle(title: string, category: NoticeCategory) {
+  const prefix = `[${noticeCategoryLabel(category)}]`;
+  return title.startsWith(prefix) && title.length > prefix.length ? title.slice(prefix.length).trim() : title;
+}
 
 export const inquiryTypes: { value: InquiryType; label: string }[] = [
   { value: "ACCOUNT", label: "계정·면허 인증" },

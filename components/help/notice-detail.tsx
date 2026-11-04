@@ -6,7 +6,14 @@ import { ChevronLeft } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { useNoticeQuery } from "@/hooks/queries/support/useNoticeQuery";
 import { apiErrorMessage } from "@/lib/api";
-import { formatDate, noticeCategoryLabel } from "@/lib/support";
+import {
+  formatDate,
+  NOTICE_IMPORTANT_CHIP,
+  noticeCategoryChip,
+  noticeCategoryLabel,
+  noticeDisplayTitle,
+} from "@/lib/support";
+import { cn } from "@/lib/utils";
 
 // 공지 본문. 읽기 전용
 export function NoticeDetail({ id }: { id: string }) {
@@ -30,10 +37,24 @@ export function NoticeDetail({ id }: { id: string }) {
       ) : (
         <article className="mt-5">
           <header className="border-b border-[#EFEFEF] pb-5">
-            <span className="inline-flex h-6 items-center rounded-md bg-surface px-2 text-[12px] font-bold text-[#555]">
-              {noticeCategoryLabel(notice.data.category)}
-            </span>
-            <h1 className="mt-2.5 text-[22px] font-extrabold tracking-[-0.045em] break-words md:text-[28px]">{notice.data.title}</h1>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={cn(
+                  "inline-flex h-6 items-center rounded-md px-2 text-[12px] font-bold",
+                  noticeCategoryChip(notice.data.category),
+                )}
+              >
+                {noticeCategoryLabel(notice.data.category)}
+              </span>
+              {notice.data.important && (
+                <span className={cn("inline-flex h-6 items-center rounded-md px-2 text-[12px] font-bold", NOTICE_IMPORTANT_CHIP)}>
+                  중요
+                </span>
+              )}
+            </div>
+            <h1 className="mt-2.5 text-[22px] font-extrabold tracking-[-0.045em] break-words md:text-[28px]">
+              {noticeDisplayTitle(notice.data.title, notice.data.category)}
+            </h1>
             <p className="mt-2 text-[13.5px] text-faint">롬 운영팀 · {formatDate(notice.data.createdAt)}</p>
           </header>
           <div className="py-7 text-[15.5px] leading-[1.8] break-words whitespace-pre-wrap text-[#222]">{notice.data.content}</div>

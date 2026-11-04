@@ -7,7 +7,7 @@ import type { NoticeItem } from "@/lib/support";
 export function useNoticeBannerQuery() {
   return useQuery({
     queryKey: ["notices", "banner"],
-    queryFn: () => apiFetch<{ notice: Omit<NoticeItem, "pinned"> | null }>("/notices/banner").then((r) => r.notice),
+    queryFn: () => apiFetch<{ notice: Omit<NoticeItem, "pinned" | "important"> | null }>("/notices/banner").then((r) => r.notice),
     staleTime: 5 * 60_000,
   });
 }

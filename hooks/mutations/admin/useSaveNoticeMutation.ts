@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminFetch } from "@/lib/admin-api";
 import type { Notice, NoticeCategory } from "@/lib/support";
 
-export type NoticeBody = { category: NoticeCategory; title: string; content: string; pinned: boolean };
+export type NoticeBody = { category: NoticeCategory; title: string; content: string; pinned: boolean; important: boolean };
 
 // 공지 작성·수정 (rom-back POST /admin/notices, PUT /admin/notices/:id)
 export function useSaveNoticeMutation() {
