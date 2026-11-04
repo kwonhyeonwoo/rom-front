@@ -7,11 +7,14 @@ import { Check, ImagePlus, ShieldCheck, Star, Users } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { CommunityLoginRequired, CommunitySkeleton } from "@/components/community/login-required";
+import { useSavePhoneMutation } from "@/hooks/mutations/phone/useSavePhoneMutation";
 import { useRequestVerificationMutation } from "@/hooks/mutations/verification/useRequestVerificationMutation";
+import { usePhoneQuery } from "@/hooks/queries/phone/usePhoneQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { apiErrorMessage } from "@/lib/api";
+import { isValidPhone } from "@/lib/phone";
 import {
   LICENSE_FIELDS,
   LICENSE_IMAGE_MAX_BYTES,
@@ -19,6 +22,7 @@ import {
   formatRequestedAt,
 } from "@/lib/verification";
 import { toast } from "@/stores/use-toast-store";
+import { PhoneField } from "./phone-field";
 import { VerifyBanner } from "./verify-banner";
 
 const inputClass =
@@ -71,7 +75,7 @@ export function VerifyForm() {
             <b className="text-[13.5px]">개인정보는 이렇게 다뤄요</b>
             <p className="mt-1 text-sub">
               · 면허증 사진은 관리자 확인용으로만 쓰고, 검토가 끝나면 바로 삭제해요
-              <br />· 면허번호는 암호화해 저장하고 다른 회원에게 보이지 않아요
+              <br />· 면허번호와 휴대폰번호는 암호화해 저장하고 다른 회원에게 보이지 않아요
               <br />· 커뮤니티에는 닉네임과 &apos;인증 PT&apos; 표시만 나와요
             </p>
           </div>
@@ -79,17 +83,19 @@ export function VerifyForm() {
 
         <div className="w-full lg:w-[500px] lg:shrink-0">
           <VerifyBanner verification={verification} />
-          <RequestForm />
+          <RequestForm viewer={session.user.id} />
         </div>
       </div>
     </Container>
   );
 }
 
-function RequestForm() {
+function RequestForm({ viewer }: { viewer: string }) {
   const router = useRouter();
   const { data: user } = useUserQuery(true);
   const request = useRequestVerificationMutation();
+  const phoneQuery = usePhoneQuery(viewer);
+  const savePhone = useSavePhoneMutation();
 
   const [name, setName] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
@@ -100,6 +106,14 @@ function RequestForm() {
   const previewRef = useRef<string | null>(null);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRules, setAgreeRules] = useState(false);
+  // 저장된 번호가 있으면 확인만, 없거나 "변경"을 누르면 입력받는다
+  const [phoneInput, setPhoneInput] = useState("");
+  const [editingPhone, setEditingPhone] = useState(false);
+  // 번호를 못 불러오면 입력칸을 보여준다 (다시 입력해 저장하면 된다)
+  const storedPhone = phoneQuery.isError ? null : phoneQuery.data;
+  const needsPhoneInput = storedPhone === null || editingPhone;
+  const phoneReady = needsPhoneInput ? isValidPhone(phoneInput) : storedPhone !== undefined;
+  const busy = request.isPending || savePhone.isPending;
 
   const thisYear = new Date().getFullYear();
   const years = Array.from({ length: thisYear - 1969 }, (_, index) => thisYear - index);
@@ -109,6 +123,7 @@ function RequestForm() {
     /^\d{3,10}$/.test(licenseNumber) &&
     year !== "" &&
     photo !== null &&
+    phoneReady &&
     agreePrivacy &&
     agreeRules;
 
@@ -134,9 +149,17 @@ function RequestForm() {
     setPhoto(file);
   }
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!valid || !photo || request.isPending) return;
+    if (!valid || !photo || busy) return;
+    if (needsPhoneInput) {
+      try {
+        await savePhone.mutateAsync(phoneInput);
+        setEditingPhone(false);
+      } catch (error) {
+        return toast(apiErrorMessage(error, "휴대폰번호를 저장하지 못했어요. 잠시 후 다시 시도해주세요"));
+      }
+    }
     request.mutate(
       { name: shownName.trim(), licenseNumber, acquiredYear: Number(year), field, photo },
       {
@@ -171,6 +194,18 @@ function RequestForm() {
           className={inputClass}
         />
       </div>
+
+      <PhoneField
+        phone={storedPhone}
+        editing={editingPhone}
+        value={phoneInput}
+        onChange={setPhoneInput}
+        onEdit={() => setEditingPhone(true)}
+        onCancel={() => {
+          setEditingPhone(false);
+          setPhoneInput("");
+        }}
+      />
 
       <div className="mt-[18px]">
         <label htmlFor="license" className={labelClass}>
@@ -242,7 +277,7 @@ function RequestForm() {
 
       <div className="mt-5 space-y-2.5 rounded-[14px] bg-[#F7F7F5] p-4">
         <Consent checked={agreePrivacy} onChange={setAgreePrivacy}>
-          <b>[필수]</b> 면허 확인을 위한 개인정보 수집·이용 동의
+          <b>[필수]</b> 면허 확인·연락을 위한 개인정보(면허번호·휴대폰번호) 수집·이용 동의
         </Consent>
         <Consent checked={agreeRules} onChange={setAgreeRules}>
           <b>[필수]</b> 커뮤니티 이용 규칙 동의
@@ -251,10 +286,10 @@ function RequestForm() {
 
       <button
         type="submit"
-        disabled={!valid || request.isPending}
+        disabled={!valid || busy}
         className="mt-5 flex h-[52px] w-full items-center justify-center rounded-full bg-ink text-base font-bold text-white disabled:bg-[#CFCFCF]"
       >
-        {request.isPending ? "요청하는 중" : "인증 요청하기"}
+        {busy ? "요청하는 중" : "인증 요청하기"}
       </button>
       <p className="mt-3 text-center text-[13px] text-faint">보통 영업일 1일 안에 결과를 알려드려요</p>
     </form>
