@@ -1,4 +1,6 @@
-import { CalendarClock, PartyPopper, ShieldCheck } from "lucide-react";
+import { CalendarClock, EyeOff, PartyPopper, ShieldCheck } from "lucide-react";
+
+import type { HiddenState } from "@/lib/community";
 
 import { formatPublishAt } from "@/lib/community";
 import { cn } from "@/lib/utils";
@@ -39,5 +41,26 @@ export function ScheduledTag({
       <CalendarClock size={12} strokeWidth={2.2} />
       {formatPublishAt(at)} 게시 예정
     </span>
+  );
+}
+
+// 신고로 숨긴 글·댓글 (작성자 본인에게만 보인다)
+export function HiddenTag({ className }: { className?: string }) {
+  return (
+    <span className={cn(chip, "bg-[#FDECEA] text-soon", className)}>
+      <EyeOff size={12} strokeWidth={2.2} />
+      숨김
+    </span>
+  );
+}
+
+// 글 상세 위 안내. 신고한 사람은 알려주지 않는다
+export function HiddenNotice({ state }: { state: Exclude<HiddenState, null> }) {
+  return (
+    <p className="mb-4 rounded-[12px] bg-[#FDECEA] px-3.5 py-3 text-[13px] leading-[1.55] text-[#B42318]">
+      {state === "REVIEWING"
+        ? "신고가 여러 건 접수돼 운영팀이 검토하는 동안 이 글을 숨겼어요. 지금은 나에게만 보이고, 검토가 끝나면 알림으로 알려드려요."
+        : "운영 정책에 따라 이 글을 숨겼어요. 지금은 나에게만 보여요. 문의는 고객센터 1:1 문의로 남겨주세요."}
+    </p>
   );
 }

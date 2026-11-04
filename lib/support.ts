@@ -36,7 +36,8 @@ export type Inquiry = {
 // member가 false인 문의는 회원 전용으로 바꾸기 전에 받은 비회원 문의다
 export type AdminInquiry = Inquiry & { member: boolean; email: string | null; answeredBy: string | null };
 
-export type AdminSummary = { pendingVerifications: number; openInquiries: number };
+// pendingReports: 처리할 신고 대상(글·댓글) 수
+export type AdminSummary = { pendingVerifications: number; openInquiries: number; pendingReports: number };
 
 // 분류별 칩 색. 필터 탭과 관리자 작성 화면도 이 순서를 따른다
 export const noticeCategories: { value: NoticeCategory; label: string; chip: string }[] = [

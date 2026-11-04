@@ -71,6 +71,8 @@ export type Post = {
   // 게시 시각(createdAt)이 아직 오지 않은 예약 글. 작성자에게만 내려온다
   scheduled: boolean;
   mine: boolean;
+  // 신고로 숨긴 글 (작성자에게만 내려온다). REVIEWING: 신고가 쌓여 자동으로 숨기고 검토 중, HIDDEN: 운영팀이 숨김
+  hidden: HiddenState;
   liked: boolean;
   likeCount: number;
   commentCount: number;
@@ -89,11 +91,18 @@ export type PostComment = {
   byOperator: boolean;
   mine: boolean;
   byAuthor: boolean;
+  // 신고로 숨긴 댓글 (단 사람에게만 내려온다)
+  hidden: HiddenState;
+  // 내가 이미 신고한 댓글
+  reported: boolean;
   createdAt: string;
 };
 
 // commentsLocked: 면허 인증을 마친 회원이 아니라서 댓글 내용이 내려오지 않았다 (개수는 commentCount)
-export type PostDetail = Post & { comments: PostComment[]; commentsLocked: boolean };
+// reported: 내가 이미 신고한 글
+export type PostDetail = Post & { comments: PostComment[]; commentsLocked: boolean; reported: boolean };
+
+export type HiddenState = "REVIEWING" | "HIDDEN" | null;
 
 export type PostPage = {
   items: Post[];

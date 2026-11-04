@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BadgeCheck, LogOut, Megaphone, MessagesSquare } from "lucide-react";
+import { BadgeCheck, LogOut, Megaphone, MessagesSquare, Siren } from "lucide-react";
 
 import { AdminLogin } from "@/components/admin/admin-login";
 import { Logo } from "@/components/layout/logo";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const menu: { label: string; href: string; icon: typeof BadgeCheck; badge?: keyof AdminSummary }[] = [
   { label: "면허 인증 심사", href: "/admin/verifications", icon: BadgeCheck, badge: "pendingVerifications" },
+  { label: "신고 관리", href: "/admin/reports", icon: Siren, badge: "pendingReports" },
   { label: "1:1 문의", href: "/admin/inquiries", icon: MessagesSquare, badge: "openInquiries" },
   { label: "공지사항", href: "/admin/notices", icon: Megaphone },
 ];

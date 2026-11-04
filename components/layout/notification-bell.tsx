@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, MessageSquareReply } from "lucide-react";
+import { Bell, EyeOff, MessageSquareReply, Siren } from "lucide-react";
 
 import { useReadAllNotificationsMutation } from "@/hooks/mutations/notification/useReadAllNotificationsMutation";
 import { useReadNotificationMutation } from "@/hooks/mutations/notification/useReadNotificationMutation";
 import { useNotificationsQuery } from "@/hooks/queries/notification/useNotificationsQuery";
-import { timeAgo, type AppNotification } from "@/lib/notifications";
+import { timeAgo, type AppNotification, type NotificationType } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 
 // 헤더 알림 벨. 안 읽은 알림 개수를 배지로 보여주고, 누르면 알림 목록이 열린다.
@@ -114,7 +114,7 @@ export function NotificationBell({ mobile = false }: { mobile?: boolean }) {
                       )}
                     >
                       <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-surface text-brand">
-                        <MessageSquareReply size={16} />
+                        <NotificationIcon type={item.type} />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className={cn("block text-[14px] leading-[1.4]", item.readAt ? "font-semibold" : "font-bold")}>
@@ -134,4 +134,10 @@ export function NotificationBell({ mobile = false }: { mobile?: boolean }) {
       )}
     </div>
   );
+}
+
+function NotificationIcon({ type }: { type: NotificationType }) {
+  if (type === "REPORT_RESULT") return <Siren size={16} />;
+  if (type === "CONTENT_HIDDEN") return <EyeOff size={16} className="text-soon" />;
+  return <MessageSquareReply size={16} />;
 }
