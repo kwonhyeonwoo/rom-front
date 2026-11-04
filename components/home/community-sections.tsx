@@ -6,6 +6,7 @@ import { Flame, Heart, MessageCircle, PenLine, Star } from "lucide-react";
 
 import { SeminarPoster } from "@/components/seminar/seminar-poster";
 import { BoardTag } from "@/components/community/post-item";
+import { EventTag, OperatorBadge } from "@/components/community/post-badges";
 import { WriteButton } from "@/components/verification/write-button";
 import { useCommunitySummaryQuery } from "@/hooks/queries/community/useCommunitySummaryQuery";
 import { usePostsQuery } from "@/hooks/queries/community/usePostsQuery";
@@ -150,9 +151,11 @@ export function LatestPostsSection() {
                   </div>
                   <p className="mt-1.5 truncate text-[13px] text-sub md:text-sm">{post.content}</p>
                   <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-                    <span>
+                    <span className="flex min-w-0 items-center gap-1.5">
                       <b className="font-semibold text-[#333]">{post.authorName}</b>
-                      <span className="text-faint"> · {timeAgo(post.createdAt)}</span>
+                      {post.byOperator && <OperatorBadge />}
+                      {post.eventEntry && <EventTag />}
+                      <span className="text-faint">· {timeAgo(post.createdAt)}</span>
                     </span>
                     <Stats post={post} />
                   </div>

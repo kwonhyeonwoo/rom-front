@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, CalendarClock, X } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { pillClass } from "@/components/search/filter-pill";
@@ -17,7 +17,10 @@ import {
   POST_CONTENT_MAX,
   POST_CONTENT_MIN,
   POST_TITLE_MAX,
+  OPERATOR_NAME,
+  SCHEDULE_MAX_DAYS,
   boards,
+  formatPublishAt,
   previewName,
   type Board,
 } from "@/lib/community";
@@ -25,6 +28,32 @@ import { isVerificationRequired } from "@/lib/verification";
 import { VerifyGate } from "@/components/verification/verify-gate";
 import { toast } from "@/stores/use-toast-store";
 import { CommunityLoginRequired, CommunitySkeleton } from "./login-required";
+import { OperatorBadge } from "./post-badges";
+
+// <input type="datetime-local">은 브라우저 시간대 기준 "YYYY-MM-DDTHH:mm"
+function toLocalInput(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// 예약 시각이 지금보다 뒤이고 90일 안인지. 문제가 없으면 null
+function scheduleProblem(date: Date | null) {
+  if (date === null) return "게시할 날짜와 시간을 골라주세요";
+  const now = Date.now();
+  if (Number.isNaN(date.getTime()) || date.getTime() <= now)
+    return "지금보다 뒤의 시간을 골라주세요";
+  if (date.getTime() - now > SCHEDULE_MAX_DAYS * 86_400_000)
+    return `예약은 ${SCHEDULE_MAX_DAYS}일 안으로만 할 수 있어요`;
+  return null;
+}
+
+// 예약 시각 기본값: 다음 날 오전 9시
+function tomorrowNine() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(9, 0, 0, 0);
+  return toLocalInput(d);
+}
 
 export function PostForm() {
   const session = useSession();
@@ -33,7 +62,7 @@ export function PostForm() {
   const { data: user } = useUserQuery(Boolean(session));
   const bookmarks = useBookmarksQuery(Boolean(session));
   const create = useCreatePostMutation();
-  const { access, verification } = useVerifyAccess();
+  const { access, verification, operator } = useVerifyAccess();
 
   const [board, setBoard] = useState<Board>(
     boards.find((b) => b.value === params.get("board"))?.value ?? "FREE",
@@ -42,12 +71,16 @@ export function PostForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [anonymous, setAnonymous] = useState(board === "FREE");
+  // 운영 계정만: 예약 게시
+  const [scheduling, setScheduling] = useState(false);
+  const [publishAt, setPublishAt] = useState(tomorrowNine);
 
   if (session === undefined) return <CommunitySkeleton />;
   if (session === null) return <CommunityLoginRequired />;
   if (access === "LOADING") return <CommunitySkeleton />;
   // 글쓰기는 면허 인증을 마친 회원만. 서버도 한 번 더 막는다
-  if (access !== "APPROVED") return <VerifyGate access={access} verification={verification} />;
+  if (access !== "APPROVED")
+    return <VerifyGate access={access} verification={verification} />;
 
   // 후기에 연결할 수 있는 건 내가 저장하고 "들었어요"라고 답한 세미나
   const attended = (bookmarks.data ?? []).filter(
@@ -56,11 +89,14 @@ export function PostForm() {
   const selected = attended.find((s) => s.id === seminarId);
   const titleLength = title.trim().length;
   const contentLength = content.trim().length;
+  const scheduleDate = scheduling && publishAt ? new Date(publishAt) : null;
+  const scheduleError = scheduling ? scheduleProblem(scheduleDate) : null;
   const valid =
     titleLength >= 2 &&
     titleLength <= POST_TITLE_MAX &&
     contentLength >= POST_CONTENT_MIN &&
-    contentLength <= POST_CONTENT_MAX;
+    contentLength <= POST_CONTENT_MAX &&
+    !(operator && scheduleError);
   const name = user?.name ?? session.user.email ?? null;
 
   function selectBoard(next: Board) {
@@ -79,12 +115,20 @@ export function PostForm() {
         board,
         title: title.trim(),
         content: content.trim(),
-        anonymous,
+        anonymous: operator ? false : anonymous,
         ...(seminarId && { seminarId }),
+        ...(operator &&
+          scheduleDate && { publishAt: scheduleDate.toISOString() }),
       },
       {
-        onSuccess: ({ id }) => {
-          toast("글을 올렸어요");
+        onSuccess: ({ id, eventEntry, publishAt: scheduledAt }) => {
+          toast(
+            scheduledAt
+              ? `${formatPublishAt(scheduledAt)}에 게시되도록 예약했어요`
+              : eventEntry
+                ? "첫 글 이벤트에 참여했어요"
+                : "글을 올렸어요",
+          );
           router.replace(`/community/${id}`);
         },
         onError: (error) =>
@@ -224,39 +268,127 @@ export function PostForm() {
           </span>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-surface px-4 py-3.5">
-          <div className="min-w-0">
-            <label htmlFor="post-anonymous" className="text-[14.5px] font-bold">
-              익명으로 쓰기
-            </label>
-            <p className="mt-0.5 truncate text-[12.5px] text-sub">
-              다른 사람에게{" "}
-              <b className="text-ink">{previewName(name, anonymous)}</b>로
-              보여요
-            </p>
+        {operator ? (
+          <OperatorOptions
+            scheduling={scheduling}
+            onScheduling={setScheduling}
+            publishAt={publishAt}
+            onPublishAt={setPublishAt}
+            error={scheduleError}
+          />
+        ) : (
+          <div className="mt-6 flex items-center justify-between gap-4 rounded-[14px] bg-surface px-4 py-3.5">
+            <div className="min-w-0">
+              <label
+                htmlFor="post-anonymous"
+                className="text-[14.5px] font-bold"
+              >
+                익명으로 쓰기
+              </label>
+              <p className="mt-0.5 truncate text-[12.5px] text-sub">
+                다른 사람에게{" "}
+                <b className="text-ink">{previewName(name, anonymous)}</b>로
+                보여요
+              </p>
+            </div>
+            <button
+              id="post-anonymous"
+              type="button"
+              role="switch"
+              aria-checked={anonymous}
+              onClick={() => setAnonymous((value) => !value)}
+              className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${anonymous ? "bg-brand" : "bg-[#CFCFCF]"}`}
+            >
+              <span
+                className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${anonymous ? "left-[19px]" : "left-[3px]"}`}
+              />
+            </button>
           </div>
-          <button
-            id="post-anonymous"
-            type="button"
-            role="switch"
-            aria-checked={anonymous}
-            onClick={() => setAnonymous((value) => !value)}
-            className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${anonymous ? "bg-brand" : "bg-[#CFCFCF]"}`}
-          >
-            <span
-              className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${anonymous ? "left-[19px]" : "left-[3px]"}`}
-            />
-          </button>
-        </div>
+        )}
 
         <button
           type="submit"
           disabled={!valid || create.isPending}
           className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white disabled:bg-[#CFCFCF] md:w-auto md:px-12"
         >
-          {create.isPending ? "올리는 중" : "등록"}
+          {create.isPending
+            ? "올리는 중"
+            : operator && scheduling
+              ? "예약 등록"
+              : "등록"}
         </button>
       </form>
     </Container>
+  );
+}
+
+// 운영 계정 글쓰기: 이름은 가리지 않고 "ROM 운영팀"으로 보이고, 예약 게시를 할 수 있다
+function OperatorOptions({
+  scheduling,
+  onScheduling,
+  publishAt,
+  onPublishAt,
+  error,
+}: {
+  scheduling: boolean;
+  onScheduling: (value: boolean) => void;
+  publishAt: string;
+  onPublishAt: (value: string) => void;
+  error: string | null;
+}) {
+  return (
+    <div className="mt-6 rounded-[14px] bg-surface px-4 py-3.5">
+      <p className="flex items-center gap-1.5 text-[12.5px] text-sub">
+        <OperatorBadge />
+        <span>
+          다른 사람에게 <b className="text-ink">{OPERATOR_NAME}</b>로 보여요
+        </span>
+      </p>
+      <div className="mt-3.5 flex items-center justify-between gap-4 border-t border-[#E6E6E3] pt-3.5">
+        <div className="min-w-0">
+          <label
+            htmlFor="post-schedule"
+            className="flex items-center gap-1.5 text-[14.5px] font-bold"
+          >
+            <CalendarClock size={16} strokeWidth={2} />
+            예약 게시
+          </label>
+          <p className="mt-0.5 text-[12.5px] text-sub">
+            정한 시간 전에는 나에게만 보여요
+          </p>
+        </div>
+        <button
+          id="post-schedule"
+          type="button"
+          role="switch"
+          aria-checked={scheduling}
+          onClick={() => onScheduling(!scheduling)}
+          className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${scheduling ? "bg-brand" : "bg-[#CFCFCF]"}`}
+        >
+          <span
+            className={`absolute top-[3px] size-[18px] rounded-full bg-white transition-all ${scheduling ? "left-[19px]" : "left-[3px]"}`}
+          />
+        </button>
+      </div>
+      {scheduling && (
+        <div className="mt-3">
+          <label htmlFor="post-publish-at" className="sr-only">
+            게시 시각
+          </label>
+          <input
+            id="post-publish-at"
+            type="datetime-local"
+            value={publishAt}
+            onChange={(event) => onPublishAt(event.target.value)}
+            className="h-12 w-full rounded-[12px] border border-[#E1E1E1] bg-white px-3.5 text-[15px] font-semibold outline-none focus:border-ink"
+          />
+          {error && (
+            <p className="mt-1.5 text-[12.5px] font-semibold text-soon">
+              {error}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

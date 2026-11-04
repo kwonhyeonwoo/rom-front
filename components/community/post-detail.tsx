@@ -17,6 +17,7 @@ import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { ApiError, apiErrorMessage } from "@/lib/api";
 import {
   COMMENT_MAX,
+  formatPublishAt,
   timeAgo,
   type PostComment,
   type PostDetail as PostDetailData,
@@ -28,6 +29,7 @@ import { toast } from "@/stores/use-toast-store";
 import { VerifyBanner } from "@/components/verification/verify-banner";
 import { CommunitySkeleton } from "./login-required";
 import { BoardTag } from "./post-item";
+import { EventTag, OperatorBadge, ScheduledTag } from "./post-badges";
 
 export function PostDetail({ postId }: { postId: string }) {
   const session = useSession();
@@ -66,7 +68,7 @@ export function PostDetail({ postId }: { postId: string }) {
 
 function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
   const router = useRouter();
-  const { access, verification } = useVerifyAccess();
+  const { access, verification, operator } = useVerifyAccess();
   const like = useToggleLikeMutation(post.id, viewer);
   const remove = useDeletePostMutation();
   const [confirming, setConfirming] = useState(false);
@@ -114,18 +116,36 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
       </div>
 
       <article>
-        <BoardTag board={post.board} />
+        {post.scheduled && (
+          <p className="mb-4 rounded-[12px] bg-[#E8F0FE] px-3.5 py-3 text-[13px] leading-[1.55] text-[#1A56DB]">
+            예약 게시 글이에요. {formatPublishAt(post.createdAt)}에 게시되고, 그
+            전에는 나에게만 보여요. 시간을 바꾸려면 지우고 다시 올려주세요.
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <BoardTag board={post.board} />
+          {post.eventEntry && <EventTag />}
+          {post.scheduled && <ScheduledTag at={post.createdAt} />}
+        </div>
         <h1 className="mt-2 text-[22px] leading-[1.4] font-extrabold tracking-[-0.04em] md:text-[28px]">
           {post.title}
         </h1>
         <div className="mt-3 flex items-center gap-2.5 border-b border-line pb-4">
-          <span className="flex size-9 items-center justify-center rounded-full bg-surface text-sm font-bold text-sub">
-            {post.authorName[0]}
+          <span
+            className={`flex size-9 items-center justify-center rounded-full text-sm font-bold ${post.byOperator ? "bg-ink text-white" : "bg-surface text-sub"}`}
+          >
+            {post.byOperator ? "R" : post.authorName[0]}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[14.5px] font-bold">{post.authorName}</p>
+            <p className="flex items-center gap-1.5 text-[14.5px] font-bold">
+              {post.authorName}
+              {post.byOperator && <OperatorBadge />}
+            </p>
             <p className="text-xs text-faint">
-              {timeAgo(post.createdAt)} · 조회{" "}
+              {post.scheduled
+                ? `${formatPublishAt(post.createdAt)} 게시 예정`
+                : timeAgo(post.createdAt)}{" "}
+              · 조회{" "}
               {post.viewCount.toLocaleString("ko-KR")}
             </p>
           </div>
@@ -221,13 +241,13 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
       {post.commentsLocked ? (
         <CommentsLocked count={post.commentCount} access={access} />
       ) : (
-        <Comments post={post} />
+        <Comments post={post} operator={operator} />
       )}
     </Container>
   );
 }
 
-function Comments({ post }: { post: PostDetailData }) {
+function Comments({ post, operator }: { post: PostDetailData; operator: boolean }) {
   const add = useAddCommentMutation(post.id);
   const [content, setContent] = useState("");
   const [anonymous, setAnonymous] = useState(post.board === "FREE");
@@ -237,7 +257,7 @@ function Comments({ post }: { post: PostDetailData }) {
     event.preventDefault();
     if (length === 0 || add.isPending) return;
     add.mutate(
-      { content: content.trim(), anonymous },
+      { content: content.trim(), anonymous: operator ? false : anonymous },
       {
         onSuccess: () => setContent(""),
         onError: (error) =>
@@ -274,15 +294,23 @@ function Comments({ post }: { post: PostDetailData }) {
           className="w-full resize-none rounded-[12px] border border-[#E1E1E1] p-3.5 text-[14.5px] leading-[1.6] outline-none placeholder:text-faint focus:border-ink"
         />
         <div className="mt-2 flex items-center justify-between">
-          <label className="flex items-center gap-2 text-[13px] text-sub">
-            <input
-              type="checkbox"
-              checked={anonymous}
-              onChange={(event) => setAnonymous(event.target.checked)}
-              className="size-4 accent-[#0F7B6C]"
-            />
-            익명
-          </label>
+          {operator ? (
+            // 운영 계정 댓글은 익명 없이 "ROM 운영팀"으로 보인다
+            <span className="flex items-center gap-1.5 text-[13px] text-sub">
+              <OperatorBadge />
+              ROM 운영팀으로 보여요
+            </span>
+          ) : (
+            <label className="flex items-center gap-2 text-[13px] text-sub">
+              <input
+                type="checkbox"
+                checked={anonymous}
+                onChange={(event) => setAnonymous(event.target.checked)}
+                className="size-4 accent-[#0F7B6C]"
+              />
+              익명
+            </label>
+          )}
           <button
             type="submit"
             disabled={length === 0 || add.isPending}
@@ -313,12 +341,15 @@ function CommentItem({ comment }: { comment: PostComment }) {
 
   return (
     <div className="flex gap-2.5 border-b border-line py-4">
-      <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-sub">
-        {comment.authorName[0]}
+      <span
+        className={`flex size-[30px] shrink-0 items-center justify-center rounded-full text-xs font-bold ${comment.byOperator ? "bg-ink text-white" : "bg-surface text-sub"}`}
+      >
+        {comment.byOperator ? "R" : comment.authorName[0]}
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-[13px]">
           <b>{comment.authorName}</b>
+          {comment.byOperator && <OperatorBadge />}
           {comment.byAuthor && (
             <span className="rounded bg-[#E6F2EF] px-1.5 text-[11px] font-bold text-brand">
               작성자
