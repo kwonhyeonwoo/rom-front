@@ -30,7 +30,8 @@ import { VerifyBanner } from "@/components/verification/verify-banner";
 import { CommunitySkeleton } from "./login-required";
 import { PostContent, PostImages } from "./post-content";
 import { BoardTag, FieldTag } from "./post-item";
-import { EventTag, OperatorBadge, ScheduledTag } from "./post-badges";
+import { EventTag, HiddenNotice, HiddenTag, OperatorBadge, ScheduledTag } from "./post-badges";
+import { ReportButton } from "./report-dialog";
 
 export function PostDetail({ postId }: { postId: string }) {
   const session = useSession();
@@ -117,6 +118,7 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
       </div>
 
       <article>
+        {post.hidden && <HiddenNotice state={post.hidden} />}
         {post.scheduled && (
           <p className="mb-4 rounded-[12px] bg-[#E8F0FE] px-3.5 py-3 text-[13px] leading-[1.55] text-[#1A56DB]">
             예약 게시 글이에요. {formatPublishAt(post.createdAt)}에 게시되고, 그
@@ -125,6 +127,7 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
         )}
         <div className="flex flex-wrap items-center gap-1.5">
           <BoardTag board={post.board} />
+          {post.hidden && <HiddenTag />}
           {post.eventEntry && <EventTag />}
           {post.scheduled && <ScheduledTag at={post.createdAt} />}
           {post.fields.map((field) => (
@@ -187,6 +190,9 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
                 <Trash2 size={18} />
               </button>
             ))}
+          {!post.mine && !post.scheduled && (
+            <ReportButton target="POST" id={post.id} reported={post.reported} loggedIn={viewer !== "guest"} />
+          )}
         </div>
 
         {post.rating !== null && (
@@ -244,13 +250,13 @@ function PostView({ post, viewer }: { post: PostDetailData; viewer: string }) {
       {post.commentsLocked ? (
         <CommentsLocked count={post.commentCount} access={access} />
       ) : (
-        <Comments post={post} operator={operator} />
+        <Comments post={post} operator={operator} loggedIn={viewer !== "guest"} />
       )}
     </Container>
   );
 }
 
-function Comments({ post, operator }: { post: PostDetailData; operator: boolean }) {
+function Comments({ post, operator, loggedIn }: { post: PostDetailData; operator: boolean; loggedIn: boolean }) {
   const add = useAddCommentMutation(post.id);
   const [content, setContent] = useState("");
   const [anonymous, setAnonymous] = useState(post.board === "FREE");
@@ -331,7 +337,7 @@ function Comments({ post, operator }: { post: PostDetailData; operator: boolean 
           </p>
         ) : (
           post.comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
+            <CommentItem key={comment.id} comment={comment} loggedIn={loggedIn} />
           ))
         )}
       </div>
@@ -339,7 +345,7 @@ function Comments({ post, operator }: { post: PostDetailData; operator: boolean 
   );
 }
 
-function CommentItem({ comment }: { comment: PostComment }) {
+function CommentItem({ comment, loggedIn }: { comment: PostComment; loggedIn: boolean }) {
   const remove = useDeleteCommentMutation();
 
   return (
@@ -359,6 +365,12 @@ function CommentItem({ comment }: { comment: PostComment }) {
             </span>
           )}
           <span className="text-faint">{timeAgo(comment.createdAt)}</span>
+          {comment.hidden && <HiddenTag />}
+          {!comment.mine && (
+            <span className="ml-auto">
+              <ReportButton target="COMMENT" id={comment.id} reported={comment.reported} loggedIn={loggedIn} compact />
+            </span>
+          )}
           {comment.mine && (
             <button
               type="button"
@@ -384,6 +396,13 @@ function CommentItem({ comment }: { comment: PostComment }) {
         <p className="mt-1 text-[14.5px] leading-[1.6] whitespace-pre-line">
           {comment.content}
         </p>
+        {comment.hidden && (
+          <p className="mt-1.5 text-[12.5px] text-sub">
+            {comment.hidden === "REVIEWING"
+              ? "신고가 여러 건 접수돼 운영팀 검토 전까지 나에게만 보여요"
+              : "운영 정책에 따라 숨겨져 나에게만 보여요"}
+          </p>
+        )}
       </div>
     </div>
   );

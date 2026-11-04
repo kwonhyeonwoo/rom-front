@@ -5,7 +5,7 @@ import { StarRating } from "@/components/review/star-rating";
 import { boardLabel, plainContent, timeAgo, type Post } from "@/lib/community";
 import { formatSchedule } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
-import { EventTag, OperatorBadge, ScheduledTag } from "./post-badges";
+import { EventTag, HiddenTag, OperatorBadge, ScheduledTag } from "./post-badges";
 
 export function BoardTag({
   board,
@@ -43,6 +43,7 @@ export function PostItem({ post }: { post: Post }) {
       <Link href={`/community/${post.id}`} className="block py-4 md:py-5">
         <div className="flex flex-wrap items-center gap-1.5">
           <BoardTag board={post.board} />
+          {post.hidden && <HiddenTag />}
           {post.eventEntry && <EventTag />}
           {post.scheduled && <ScheduledTag at={post.createdAt} />}
           {post.fields.map((field) => (

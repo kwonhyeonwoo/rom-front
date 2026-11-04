@@ -1,5 +1,6 @@
 // rom-back 알림 API (/notifications) 응답 모델
-export type NotificationType = "INQUIRY_ANSWER";
+// INQUIRY_ANSWER: 문의 답변, REPORT_RESULT: 내가 한 신고의 처리 결과, CONTENT_HIDDEN: 내 글·댓글이 신고로 숨겨짐
+export type NotificationType = "INQUIRY_ANSWER" | "REPORT_RESULT" | "CONTENT_HIDDEN";
 
 export type AppNotification = {
   id: string;
