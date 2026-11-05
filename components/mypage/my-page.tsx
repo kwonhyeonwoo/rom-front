@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Bookmark, ChevronRight, Headset, LogOut, MessageSquareText, MessagesSquare, UserX } from "lucide-react";
+import { Bell, Bookmark, ChevronRight, Headset, LogOut, Megaphone, MessageSquareText, MessagesSquare, UserX } from "lucide-react";
 
 import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
@@ -13,14 +13,17 @@ import { ListStatus } from "@/components/seminar/list-status";
 import { SeminarCard } from "@/components/seminar/seminar-card";
 import { SeminarListItem } from "@/components/seminar/seminar-list-item";
 import { SeminarCardSkeleton, SeminarListItemSkeleton, SkeletonList } from "@/components/seminar/seminar-skeleton";
+import { useMarketingConsentMutation } from "@/hooks/mutations/consent/useMarketingConsentMutation";
 import { useLogoutMutation } from "@/hooks/mutations/user/useLogoutMutation";
 import { useWithdrawMutation } from "@/hooks/mutations/user/useWithdrawMutation";
+import { useConsentsQuery } from "@/hooks/queries/consent/useConsentsQuery";
 import { useBookmarksQuery } from "@/hooks/queries/bookmark/useBookmarksQuery";
 import { useUnreadAnswersQuery } from "@/hooks/queries/support/useUnreadAnswersQuery";
 import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { reviewStage, type SavedSeminar } from "@/lib/reviews";
 import { cn, sessionUserName } from "@/lib/utils";
+import { toast } from "@/stores/use-toast-store";
 
 const providerLabels: Record<string, string> = {
   google: "Google 계정",
@@ -91,6 +94,7 @@ export function MyPage() {
             {menu.map((item) => (
               <MenuLink key={item.label} {...item} />
             ))}
+            <MarketingToggle viewer={session.user.id} />
             <LogoutButton onClick={() => logout.mutate()} disabled={logout.isPending} />
             <WithdrawButton onConfirm={() => withdraw.mutate()} pending={withdraw.isPending} />
           </nav>
@@ -113,6 +117,7 @@ export function MyPage() {
             {menu.slice(1).map((item) => (
               <MenuLink key={item.label} {...item} />
             ))}
+            <MarketingToggle viewer={session.user.id} />
             <LogoutButton onClick={() => logout.mutate()} disabled={logout.isPending} />
             <WithdrawButton onConfirm={() => withdraw.mutate()} pending={withdraw.isPending} />
           </nav>
@@ -245,6 +250,52 @@ function MenuLink({
       <span className={cn("text-[12.5px] font-medium", highlight ? "font-bold text-soon" : "text-faint")}>{badge}</span>
       <ChevronRight size={16} className="text-faint" />
     </Link>
+  );
+}
+
+// [선택] 마케팅 정보 수신 동의. 면허 인증 때 고른 값을 여기서 바꾸거나 철회한다
+function MarketingToggle({ viewer }: { viewer: string }) {
+  const consents = useConsentsQuery(viewer);
+  const save = useMarketingConsentMutation();
+  const agreed = consents.data?.marketing?.agreed ?? false;
+  const disabled = consents.isPending || consents.isError || save.isPending;
+
+  function toggle() {
+    const next = !agreed;
+    save.mutate(next, {
+      onSuccess: () => toast(next ? "새 소식을 보내드릴게요" : "소식 받기를 껐어요"),
+      onError: () => toast("바꾸지 못했어요. 잠시 후 다시 시도해주세요"),
+    });
+  }
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={agreed}
+      onClick={toggle}
+      disabled={disabled}
+      className="flex h-12 w-full items-center gap-3 rounded-[10px] text-left text-[15px] font-semibold text-ink md:-mx-2 md:w-[calc(100%+16px)] md:px-2 md:hover:bg-surface"
+    >
+      <Megaphone size={18} strokeWidth={1.9} className="text-[#555]" />
+      <span className="flex-1">
+        소식 받기 <span className="text-[12.5px] font-medium text-faint">(선택)</span>
+      </span>
+      <span
+        className={cn(
+          "relative h-6 w-10 shrink-0 rounded-full transition-colors",
+          agreed ? "bg-ink" : "bg-[#D9D9D9]",
+          disabled && "opacity-60",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform",
+            agreed && "translate-x-4",
+          )}
+        />
+      </span>
+    </button>
   );
 }
 

@@ -25,11 +25,11 @@ export default function SignupPage() {
       <SocialLoginButtons action="시작하기" />
       <p className="mt-[18px] text-[12.5px] leading-[1.6] text-faint">
         가입하면{" "}
-        <Link href="/terms" className="text-sub underline">
+        <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-sub underline">
           이용약관
         </Link>{" "}
         및{" "}
-        <Link href="/privacy" className="text-sub underline">
+        <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-sub underline">
           개인정보처리방침
         </Link>
         에 동의하게 돼요
