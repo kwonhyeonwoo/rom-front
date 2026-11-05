@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { LegalDocumentPage } from "@/components/legal/legal-document";
+import { privacyPolicy } from "@/lib/legal/privacy";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
 };
 
 export default function PrivacyPage() {
-  return <ComingSoon title="개인정보처리방침" description="서비스 정식 오픈에 맞춰 개인정보처리방침을 안내해드릴게요" />;
+  return <LegalDocumentPage doc={privacyPolicy} />;
 }
