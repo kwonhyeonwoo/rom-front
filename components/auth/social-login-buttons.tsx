@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Provider } from "@supabase/supabase-js";
 
-import { OAUTH_PROVIDER_COOKIE, providerNames } from "@/lib/auth-provider";
+import { KAKAO_LOGIN_ENABLED, OAUTH_PROVIDER_COOKIE, providerNames } from "@/lib/auth-provider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -45,15 +45,18 @@ export function SocialLoginButtons({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <button
-        type="button"
-        disabled={pending !== null}
-        onClick={() => signIn("kakao")}
-        className={cn(button, "bg-[#FEE500] text-[#191919]")}
-      >
-        <KakaoIcon />
-        카카오로 {action}
-      </button>
+      {/* 카카오 검수 전에는 숨긴다 (NEXT_PUBLIC_KAKAO_LOGIN_ENABLED=true 로 다시 켠다) */}
+      {KAKAO_LOGIN_ENABLED && (
+        <button
+          type="button"
+          disabled={pending !== null}
+          onClick={() => signIn("kakao")}
+          className={cn(button, "bg-[#FEE500] text-[#191919]")}
+        >
+          <KakaoIcon />
+          카카오로 {action}
+        </button>
+      )}
       <button
         type="button"
         disabled={pending !== null}
@@ -82,7 +85,7 @@ function ErrorText() {
   );
 }
 
-// 콜백(/auth/callback)에서 로그인이 실패하면 /login?error=oauth 로 돌아온다 (카카오 동의 취소 등).
+// 콜백(/auth/callback)에서 로그인이 실패하면 /login?error=oauth 로 돌아온다 (동의 취소 등).
 // 같은 이메일이 다른 소셜 로그인으로 이미 가입돼 있으면 /login?error=linked&provider=google 로 돌아온다
 function CallbackError() {
   const params = useSearchParams();
@@ -94,6 +97,17 @@ function CallbackError() {
 function LinkedAccountNotice({ provider }: { provider: string | null }) {
   const name = (provider && providerNames[provider]) ?? null;
   const button = provider === "google" ? "Google" : name;
+  // 카카오 버튼을 숨긴 동안 카카오로 가입한 이메일이면, 없는 버튼을 누르라고 하지 않는다
+  if (provider === "kakao" && !KAKAO_LOGIN_ENABLED) {
+    return (
+      <div role="alert" className="mt-1 rounded-xl bg-surface px-4 py-3.5 text-left text-[13.5px] leading-[1.6]">
+        <p className="font-bold text-ink">카카오로 가입된 이메일이에요</p>
+        <p className="mt-0.5 text-sub">
+          지금은 카카오 로그인을 잠시 쉬고 있어요. 같은 이메일로는 계정을 하나만 만들 수 있어서, 카카오 로그인이 다시 열리면 그때 로그인해주세요.
+        </p>
+      </div>
+    );
+  }
   return (
     <div role="alert" className="mt-1 rounded-xl bg-surface px-4 py-3.5 text-left text-[13.5px] leading-[1.6]">
       <p className="font-bold text-ink">
