@@ -16,14 +16,21 @@ export function SiteFooter() {
           <Link href="/help?tab=inquiry&type=PARTNER">광고·제휴 문의</Link>
         </nav>
         <p className="mt-3.5 text-xs leading-[1.75] text-faint md:mt-4 md:text-[12.5px] md:leading-[1.8]">
-          롬 · 대표 홍길동<span className="md:hidden"><br /></span>
-          <span className="hidden md:inline"> · </span>사업자등록번호 000-00-00000
-          <span className="md:hidden"><br /></span>
-          <span className="hidden md:inline"> · </span>통신판매업 신고 제0000-서울-0000호
+          롬(ROM) · 운영자 권현우
+          {/*
+            사업자등록 후 아래 항목을 이 자리에 추가한다.
+            - 사업자등록번호 000-00-00000
+            - 통신판매업 신고 제0000-OO-0000호 (수강 신청 연결 등 유료 거래를 시작할 때)
+            - 사업장 주소
+            예) <span className="hidden md:inline"> · </span>사업자등록번호 000-00-00000
+          */}
           <br />
-          서울특별시 OO구 OO로 000<span className="md:hidden"><br /></span>
-          <span className="hidden md:inline"> · </span>contact@rom.example
-          <br />© 2026 롬. All rights reserved.
+          문의는{" "}
+          <Link href="/help?tab=inquiry" className="underline underline-offset-2 hover:text-ink">
+            고객센터 1:1 문의
+          </Link>
+          로 남겨주세요
+          <br />© 2026 롬(ROM). All rights reserved.
         </p>
       </Container>
     </footer>
