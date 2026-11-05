@@ -204,7 +204,7 @@ export const privacyPolicy: LegalDocument = {
           ],
           rows: [
             [
-              "Supabase, Inc. (미국 법인, 서버 위치 【리전 확인 필요】)",
+              "Supabase, Inc. (미국 법인, 데이터 저장 위치 호주 시드니)",
               "회원 인증, 데이터베이스, 면허증 사진·커뮤니티 사진 저장",
               "1번 표의 모든 항목",
               "서비스 이용 시 네트워크로 수시 전송",
