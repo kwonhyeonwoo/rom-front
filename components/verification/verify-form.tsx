@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ImagePlus, ShieldCheck, Star, Users } from "lucide-react";
+import { ImagePlus, ShieldCheck, Star, Users } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { CommunityLoginRequired, CommunitySkeleton } from "@/components/community/login-required";
@@ -14,6 +14,7 @@ import { useUserQuery } from "@/hooks/queries/user/useUserQuery";
 import { useSession } from "@/hooks/useSession";
 import { useVerifyAccess } from "@/hooks/useVerifyAccess";
 import { apiErrorMessage } from "@/lib/api";
+import { CONSENT_VERSION } from "@/lib/consent";
 import { isValidPhone } from "@/lib/phone";
 import {
   LICENSE_FIELDS,
@@ -24,6 +25,7 @@ import {
 import { toast } from "@/stores/use-toast-store";
 import { PhoneField } from "./phone-field";
 import { VerifyBanner } from "./verify-banner";
+import { VerifyConsents, type VerifyConsentState } from "./verify-consents";
 
 const inputClass =
   "h-[50px] w-full rounded-[12px] border border-[#E1E1E1] bg-white px-4 text-[15px] outline-none placeholder:text-faint focus:border-ink";
@@ -104,8 +106,11 @@ function RequestForm({ viewer }: { viewer: string }) {
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const previewRef = useRef<string | null>(null);
-  const [agreePrivacy, setAgreePrivacy] = useState(false);
-  const [agreeRules, setAgreeRules] = useState(false);
+  const [consents, setConsents] = useState<VerifyConsentState>({
+    licensePrivacy: false,
+    communityRules: false,
+    marketing: false,
+  });
   // 저장된 번호가 있으면 확인만, 없거나 "변경"을 누르면 입력받는다
   const [phoneInput, setPhoneInput] = useState("");
   const [editingPhone, setEditingPhone] = useState(false);
@@ -124,8 +129,8 @@ function RequestForm({ viewer }: { viewer: string }) {
     year !== "" &&
     photo !== null &&
     phoneReady &&
-    agreePrivacy &&
-    agreeRules;
+    consents.licensePrivacy &&
+    consents.communityRules;
 
   // 미리보기 주소는 화면을 떠날 때 거둔다 (사진을 바꿀 때는 pick에서 거둔다)
   useEffect(
@@ -161,7 +166,19 @@ function RequestForm({ viewer }: { viewer: string }) {
       }
     }
     request.mutate(
-      { name: shownName.trim(), licenseNumber, acquiredYear: Number(year), field, photo },
+      {
+        name: shownName.trim(),
+        licenseNumber,
+        acquiredYear: Number(year),
+        field,
+        photo,
+        agreements: {
+          licensePrivacy: true,
+          communityRules: true,
+          marketing: consents.marketing,
+          version: CONSENT_VERSION,
+        },
+      },
       {
         onSuccess: () => {
           toast("면허 인증을 요청했어요. 결과는 알려드릴게요");
@@ -275,14 +292,7 @@ function RequestForm({ viewer }: { viewer: string }) {
         </label>
       </div>
 
-      <div className="mt-5 space-y-2.5 rounded-[14px] bg-[#F7F7F5] p-4">
-        <Consent checked={agreePrivacy} onChange={setAgreePrivacy}>
-          <b>[필수]</b> 면허 확인·연락을 위한 개인정보(면허번호·휴대폰번호) 수집·이용 동의
-        </Consent>
-        <Consent checked={agreeRules} onChange={setAgreeRules}>
-          <b>[필수]</b> 커뮤니티 이용 규칙 동의
-        </Consent>
-      </div>
+      <VerifyConsents value={consents} onChange={setConsents} />
 
       <button
         type="submit"
@@ -293,26 +303,6 @@ function RequestForm({ viewer }: { viewer: string }) {
       </button>
       <p className="mt-3 text-center text-[13px] text-faint">보통 영업일 1일 안에 결과를 알려드려요</p>
     </form>
-  );
-}
-
-function Consent({
-  checked,
-  onChange,
-  children,
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2.5 text-[13.5px]">
-      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="sr-only peer" />
-      <span className="flex size-5 shrink-0 items-center justify-center rounded-md border-[1.5px] border-[#CFCFCF] bg-white text-white peer-checked:border-ink peer-checked:bg-ink peer-focus-visible:ring-2 peer-focus-visible:ring-ink/30">
-        <Check size={13} strokeWidth={3} />
-      </span>
-      <span>{children}</span>
-    </label>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiFetch } from "@/lib/api";
+import type { VerificationAgreements } from "@/lib/consent";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { LICENSE_BUCKET, type Verification } from "@/lib/verification";
 
@@ -10,6 +11,8 @@ export type VerificationRequest = {
   acquiredYear: number;
   field: string;
   photo: File;
+  // 화면에서 받은 동의. 서버가 동의 시각·약관 버전과 함께 기록한다
+  agreements: VerificationAgreements;
 };
 
 // 면허 인증 요청: 업로드 토큰을 받아 사진을 비공개 버킷에 올린 뒤 면허 정보와 함께 제출한다
@@ -32,6 +35,9 @@ export function useRequestVerificationMutation() {
         body: JSON.stringify({ ...info, imagePath: path }),
       });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["verification"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["verification"] });
+      queryClient.invalidateQueries({ queryKey: ["consents"] });
+    },
   });
 }
