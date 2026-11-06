@@ -27,12 +27,12 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     siteName,
     title: siteTitle,
-    description: "학회·협회·교육업체에 흩어진 물리치료 세미나와 보수교육, 롬에서 한 번에 찾고 새 세미나 알림까지 받아보세요.",
+    description: "흩어진 물리치료 세미나와 보수교육을 롬에서 한 번에 찾고, 새 세미나 알림도 받아보세요. 면허 인증 물리치료사 커뮤니티에서 수강 후기와 정보도 나눠요.",
   },
   twitter: {
     card: "summary_large_image",
     title: siteTitle,
-    description: "흩어진 물리치료 세미나·보수교육을 한 곳에서 찾고 알림 받기",
+    description: "물리치료 세미나·보수교육을 한 곳에서 찾고, 물리치료사 커뮤니티에서 후기와 정보까지",
   },
   robots: { index: true, follow: true },
 };
