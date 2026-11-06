@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -6,10 +8,40 @@ import { PromoBanner } from "@/components/home/promo-banner";
 import { HotPostsBox, LatestPostsSection, TopReviewedSeminars } from "@/components/home/community-sections";
 import { CeCourseSection, PrivateEducationSection } from "@/components/home/seminar-sections";
 import { banners } from "@/lib/seminars";
+import { siteDescription, siteName, siteUrl } from "@/lib/site";
+
+// 제목·설명은 루트 레이아웃 기본값을 쓰고, 대표 주소만 정한다
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+// 검색 결과에 사이트 이름이 "롬"으로 나오도록 알려주는 구조화 데이터
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: siteName,
+      alternateName: ["ROM", "롬 물리치료 세미나"],
+      url: `${siteUrl}/`,
+      inLanguage: "ko",
+      description: siteDescription,
+    },
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "롬(ROM)",
+      url: `${siteUrl}/`,
+      logo: `${siteUrl}/icon.png`,
+    },
+  ],
+};
 
 export default function Home() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }} />
       <SiteHeader />
       <main>
         <HeroSearch />

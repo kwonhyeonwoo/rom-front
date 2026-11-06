@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 
 export const metadata: Metadata = {
   title: "고객센터",
+  alternates: { canonical: "/help" },
 };
 
 export default function HelpRoute() {

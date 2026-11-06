@@ -35,6 +35,13 @@ export const metadata: Metadata = {
     description: "물리치료 세미나·보수교육을 한 곳에서 찾고, 물리치료사 커뮤니티에서 후기와 정보까지",
   },
   robots: { index: true, follow: true },
+  // 구글 서치 콘솔·네이버 서치어드바이저 소유 확인용 HTML 태그. Vercel 환경 변수에 값만 넣으면 <meta>가 붙는다
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION
+      ? { "naver-site-verification": process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION }
+      : undefined,
+  },
 };
 
 export const viewport: Viewport = {

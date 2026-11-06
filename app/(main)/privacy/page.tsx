@@ -5,6 +5,7 @@ import { privacyPolicy } from "@/lib/legal/privacy";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {
