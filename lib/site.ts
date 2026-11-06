@@ -15,12 +15,16 @@ function resolveSiteUrl() {
 
 export const siteUrl = resolveSiteUrl().replace(/\/$/, "");
 
-export const siteName = "롬";
+// 구글 "사이트 이름"은 WebSite 구조화 데이터·og:site_name·<title>이 서로 같을 때 잘 잡힌다
+export const siteName = "ROM(롬)";
 
-export const siteTitle = "롬(ROM) · 물리치료 세미나·보수교육 통합 검색";
+// 사람들이 검색창에 치는 다른 이름들. 구조화 데이터 alternateName에 들어간다
+export const siteAlternateNames = ["롬", "ROM", "롬 물리치료", "rom-pt"];
+
+export const siteTitle = "ROM(롬) | 물리치료사 보수교육·세미나 검색과 커뮤니티";
 
 export const siteDescription =
-  "학회·협회·교육업체에 흩어진 물리치료 세미나와 보수교육을 매일 모아드려요. 분야·지역·주말·가격으로 찾고, 원하는 조건의 새 세미나가 올라오면 알림을 받아보세요. 면허 인증 물리치료사 커뮤니티와 수강 후기도 함께 있어요.";
+  "ROM(롬)은 물리치료사를 위한 보수교육·세미나 검색과 커뮤니티예요. 학회·협회·교육업체에 흩어진 물리치료 세미나와 보수교육을 매일 모아드려요. 분야·지역·주말·가격으로 찾고, 원하는 조건의 새 세미나가 올라오면 알림을 받아보세요. 면허 인증 물리치료사 커뮤니티와 수강 후기도 함께 있어요.";
 
 export const siteKeywords = [
   "물리치료 세미나",
@@ -36,4 +40,6 @@ export const siteKeywords = [
   "세미나 후기",
   "롬",
   "ROM",
+  "ROM(롬)",
+  "롬 물리치료",
 ];

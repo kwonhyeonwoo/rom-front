@@ -7,14 +7,14 @@ import { HeroSearch } from "@/components/home/hero-search";
 import { HomeAds } from "@/components/home/home-ads";
 import { HotPostsBox, LatestPostsSection, TopReviewedSeminars } from "@/components/home/community-sections";
 import { CeCourseSection, PrivateEducationSection } from "@/components/home/seminar-sections";
-import { siteDescription, siteName, siteUrl } from "@/lib/site";
+import { siteAlternateNames, siteDescription, siteName, siteUrl } from "@/lib/site";
 
 // 제목·설명은 루트 레이아웃 기본값을 쓰고, 대표 주소만 정한다
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// 검색 결과에 사이트 이름이 "롬"으로 나오도록 알려주는 구조화 데이터
+// 검색 결과에 사이트 이름이 "ROM(롬)"으로 나오도록 알려주는 구조화 데이터
 const siteJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -22,7 +22,8 @@ const siteJsonLd = {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       name: siteName,
-      alternateName: ["ROM", "롬 물리치료 세미나"],
+      alternateName: siteAlternateNames,
+      publisher: { "@id": `${siteUrl}/#organization` },
       url: `${siteUrl}/`,
       inLanguage: "ko",
       description: siteDescription,
@@ -30,9 +31,16 @@ const siteJsonLd = {
     {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "롬(ROM)",
+      name: siteName,
+      alternateName: siteAlternateNames,
       url: `${siteUrl}/`,
-      logo: `${siteUrl}/icon.png`,
+      // 구글은 112x112 이상의 정사각형 로고를 권장한다(icon.png는 512x512)
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/icon.png`,
+        width: 512,
+        height: 512,
+      },
     },
   ],
 };
