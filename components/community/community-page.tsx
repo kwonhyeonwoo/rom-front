@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -15,6 +15,7 @@ import { Container } from "@/components/layout/container";
 import { pillClass } from "@/components/search/filter-pill";
 import { ListStatus } from "@/components/seminar/list-status";
 import {
+  POSTS_LIMIT,
   usePostsQuery,
   type PostSort,
 } from "@/hooks/queries/community/usePostsQuery";
@@ -26,6 +27,7 @@ import { VerifyBanner } from "@/components/verification/verify-banner";
 import { WriteButton } from "@/components/verification/write-button";
 import { CommunityAside, CommunityNav } from "./community-side";
 import { CommunityLoginRequired, CommunitySkeleton } from "./login-required";
+import { PostPagination } from "./post-pagination";
 import { BoardTag, PostItem } from "./post-item";
 
 const sorts: { value: PostSort; label: string }[] = [
@@ -34,7 +36,7 @@ const sorts: { value: PostSort; label: string }[] = [
   { value: "comments", label: "댓글 많은" },
 ];
 
-// 게시판·정렬·검색어·내 글은 주소(?board=&sort=&q=&mine=1)에 담아 새로고침·공유해도 유지한다
+// 게시판·정렬·검색어·내 글·페이지는 주소(?board=&sort=&q=&mine=1&page=2)에 담아 새로고침·공유해도 유지한다
 export function CommunityPage() {
   const session = useSession();
   const router = useRouter();
@@ -51,11 +53,21 @@ export function CommunityPage() {
     sortParam === "popular" || sortParam === "comments" ? sortParam : "latest";
   const q = (params.get("q") ?? "").trim();
   const mine = params.get("mine") === "1";
+  const pageParam = Number(params.get("page"));
+  const page = Number.isInteger(pageParam) && pageParam > 1 ? pageParam : 1;
   const filtered = board !== null || q !== "" || mine;
 
   // 글 목록은 비회원도 본다. 세션 확인이 끝난 뒤에 요청한다 ("내가 쓴 글"은 로그인 필요)
   const enabled = session !== undefined && !(mine && session === null);
-  const posts = usePostsQuery({ board, sort, q, mine, viewer, enabled });
+  const posts = usePostsQuery({
+    board,
+    sort,
+    q,
+    mine,
+    page,
+    viewer,
+    enabled,
+  });
   // 위쪽 인기 글 카드: 지금 인기 있는 글 3개 (필터가 없을 때만 보여준다)
   const hot = usePostsQuery({
     board: null,
@@ -65,6 +77,7 @@ export function CommunityPage() {
     enabled: enabled && !filtered,
   });
 
+  // 게시판·정렬·검색을 바꾸면 1페이지로 돌아간다 (page를 주소에서 뺀다)
   const update = useCallback(
     (next: {
       board?: Board | null;
@@ -87,11 +100,36 @@ export function CommunityPage() {
     [board, sort, q, mine, pathname, router],
   );
 
+  // 페이지 번호 링크. 지금 필터는 그대로 두고 page만 바꾼다 (뒤로 가기로 이전 페이지)
+  const pageHref = useCallback(
+    (target: number) => {
+      const query = new URLSearchParams(params.toString());
+      if (target > 1) query.set("page", String(target));
+      else query.delete("page");
+      const qs = query.toString();
+      return qs ? `${pathname}?${qs}` : pathname;
+    },
+    [params, pathname],
+  );
+
+  const totalPages = posts.data
+    ? Math.max(
+        1,
+        Math.ceil(posts.data.total / (posts.data.limit || POSTS_LIMIT)),
+      )
+    : 1;
+  // 글이 지워져 페이지가 줄었거나 주소에 없는 페이지를 넣으면 마지막 페이지로 옮긴다
+  const outOfRange =
+    posts.data !== undefined && !posts.isPlaceholderData && page > totalPages;
+  useEffect(() => {
+    if (outOfRange) router.replace(pageHref(totalPages), { scroll: false });
+  }, [outOfRange, totalPages, pageHref, router]);
+
   if (session === undefined) return <CommunitySkeleton />;
   if (session === null && mine) return <CommunityLoginRequired />;
 
-  const items = posts.data?.pages.flatMap((page) => page.items) ?? [];
-  const hotPosts = hot.data?.pages[0]?.items ?? [];
+  const items = posts.data?.items ?? [];
+  const hotPosts = hot.data?.items ?? [];
   const current = boards.find((b) => b.value === board);
   const writeHref = board
     ? `/community/write?board=${board}`
@@ -200,25 +238,27 @@ export function CommunityPage() {
             </div>
           ) : posts.status === "error" ? (
             <ListStatus status="error" empty="" />
-          ) : items.length === 0 ? (
+          ) : items.length === 0 && page === 1 ? (
             <Empty search={q} mine={mine} writeHref={writeHref} />
           ) : (
             <>
-              <div>
+              <div
+                aria-busy={posts.isPlaceholderData}
+                className={
+                  posts.isPlaceholderData
+                    ? "opacity-50 transition-opacity"
+                    : "transition-opacity"
+                }
+              >
                 {items.map((post) => (
                   <PostItem key={post.id} post={post} />
                 ))}
               </div>
-              {posts.hasNextPage && (
-                <button
-                  type="button"
-                  onClick={() => posts.fetchNextPage()}
-                  disabled={posts.isFetchingNextPage}
-                  className="mx-auto mt-6 flex h-11 items-center rounded-full border border-[#E4E4E4] px-6 text-sm font-semibold disabled:opacity-50"
-                >
-                  {posts.isFetchingNextPage ? "불러오는 중" : "더 보기"}
-                </button>
-              )}
+              <PostPagination
+                page={page}
+                totalPages={totalPages}
+                href={pageHref}
+              />
             </>
           )}
         </div>
