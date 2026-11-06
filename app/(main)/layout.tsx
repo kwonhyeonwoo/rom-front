@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { NoticeStrip } from "@/components/layout/notice-strip";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -8,6 +9,8 @@ export default function MainLayout({ children }: LayoutProps<"/">) {
   return (
     // 모바일 하단 탭바 높이만큼 아래 여백
     <div className="flex flex-1 flex-col pb-[76px] md:pb-0">
+      {/* 공지 띠 배너는 레이아웃에 두어 어느 페이지로 이동해도 유지된다 */}
+      <NoticeStrip />
       <div className="flex-1">{children}</div>
       <SiteFooter />
       {/* 경로에 값이 들어가는 페이지(/reviews/[seminarId])에서 현재 경로를 읽는 동안 나머지 화면이 막히지 않게 한다 */}

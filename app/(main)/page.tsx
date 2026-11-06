@@ -2,7 +2,6 @@ import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
 import { SiteHeader } from "@/components/layout/site-header";
 import { HeroSearch } from "@/components/home/hero-search";
-import { NoticeStrip } from "@/components/home/notice-strip";
 import { PromoBanner } from "@/components/home/promo-banner";
 import { HotPostsBox, LatestPostsSection, TopReviewedSeminars } from "@/components/home/community-sections";
 import { CeCourseSection, PrivateEducationSection } from "@/components/home/seminar-sections";
@@ -11,7 +10,6 @@ import { banners } from "@/lib/seminars";
 export default function Home() {
   return (
     <>
-      <NoticeStrip />
       <SiteHeader />
       <main>
         <HeroSearch />

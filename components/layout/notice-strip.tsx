@@ -16,7 +16,7 @@ function readDismissed() {
   }
 }
 
-// 메인 상단 띠 배너: 가장 최근 고정 공지. 닫으면 그 공지는 이 브라우저에서 다시 띄우지 않는다
+// 모든 일반 페이지 상단 띠 배너: 가장 최근 고정 공지. 닫으면 그 공지는 이 브라우저에서 다시 띄우지 않는다
 export function NoticeStrip() {
   const banner = useNoticeBannerQuery();
   const [dismissed, setDismissed] = useState<string | null>(() => (typeof window === "undefined" ? null : readDismissed()));

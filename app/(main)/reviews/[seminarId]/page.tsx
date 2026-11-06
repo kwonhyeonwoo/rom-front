@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function ReviewWriteRoute({ params }: PageProps<"/reviews/[seminarId]">) {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader activeHref="/search" />
       <main>
         <Suspense fallback={<ReviewsSkeleton />}>
           {params.then(({ seminarId }) => (

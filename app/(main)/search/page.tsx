@@ -30,7 +30,12 @@ function SearchPageContent({ params }: { params: Record<string, string | string[
 
   return (
     <>
-      <SiteHeader hideOnMobile searchSlot={<HeaderSearchForm filters={filters} />} />
+      <SiteHeader
+        hideOnMobile
+        // 보수교육 메뉴는 같은 검색 화면에 보수교육 인정 필터만 켠 주소라, 그 필터가 켜져 있으면 보수교육을 표시한다
+        activeHref={filters.credit ? "/search?credit=1" : "/search"}
+        searchSlot={<HeaderSearchForm filters={filters} />}
+      />
       <MobileSearchHeader filters={filters} />
       <main>
         <SearchResults filters={filters} />
@@ -51,7 +56,7 @@ function SearchPageContent({ params }: { params: Record<string, string | string[
 function SearchFallback() {
   return (
     <>
-      <SiteHeader hideOnMobile />
+      <SiteHeader hideOnMobile activeHref="/search" />
       <Container className="pt-11" aria-busy>
         <div className="skeleton h-9 w-72 rounded-lg" />
         <div className="skeleton mt-6 h-[38px] w-full max-w-[640px] rounded-full" />
