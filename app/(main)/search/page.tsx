@@ -32,8 +32,14 @@ function SearchPageContent({ params }: { params: Record<string, string | string[
     <>
       <SiteHeader
         hideOnMobile
-        // 보수교육 메뉴는 같은 검색 화면에 보수교육 인정 필터만 켠 주소라, 그 필터가 켜져 있으면 보수교육을 표시한다
-        activeHref={filters.credit ? "/search?credit=1" : "/search"}
+        // 보수교육·민간교육 메뉴는 같은 검색 화면에 필터만 켠 주소라, 해당 필터가 켜져 있으면 그 메뉴를 표시한다
+        activeHref={
+          filters.credit
+            ? "/search?credit=1"
+            : filters.privateEdu
+              ? "/search?edu=1&sort=date"
+              : "/search"
+        }
         searchSlot={<HeaderSearchForm filters={filters} />}
       />
       <MobileSearchHeader filters={filters} />

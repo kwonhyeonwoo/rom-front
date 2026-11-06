@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, CalendarClock, Check, Lightbulb, X } from "lucide-react";
@@ -133,11 +133,14 @@ function PostFormBody({
   const [publishAt, setPublishAt] = useState(tomorrowNine);
 
   const empty = title.trim() === "" && content.trim() === "" && !images.length;
+  // 등록이 시작된 뒤에는 자동 임시저장이 다시 글을 남기지 않게 막는다
+  const submitted = useRef(false);
 
   // 쓰는 동안 잠깐 멈추면 자동으로 임시저장한다
   useEffect(() => {
     if (create.isSuccess) return;
     const timer = setTimeout(() => {
+      if (submitted.current) return;
       if (empty) return clearDraft(userId);
       const at = Date.now();
       if (
@@ -240,6 +243,7 @@ function PostFormBody({
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!valid || create.isPending) return;
+    submitted.current = true;
     create.mutate(
       {
         board,
@@ -254,6 +258,7 @@ function PostFormBody({
       },
       {
         onSuccess: ({ id, eventEntry, publishAt: scheduledAt }) => {
+          submitted.current = true;
           clearDraft(userId);
           toast(
             scheduledAt
@@ -264,7 +269,9 @@ function PostFormBody({
           );
           router.replace(`/community/${id}`);
         },
-        onError: (error) =>
+        onError: (error) => {
+          // 실패하면 다시 자동 임시저장을 켠다
+          submitted.current = false;
           toast(
             isVerificationRequired(error)
               ? "면허 인증 후 글을 쓸 수 있어요"
@@ -275,7 +282,8 @@ function PostFormBody({
             isVerificationRequired(error)
               ? { label: "인증하기", href: "/verify" }
               : undefined,
-          ),
+          );
+        },
       },
     );
   }
