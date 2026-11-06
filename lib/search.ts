@@ -1,7 +1,16 @@
 export const PAGE_SIZE = 12;
 
 // 민간교육 수집 출처 (rom-back의 수집기 source 값). 새 민간교육 사이트를 붙이면 여기에 추가한다
-export const PRIVATE_EDU_SOURCES = ["ncma", "fmt", "kamompt", "kcnes"];
+export const PRIVATE_EDU_SOURCES = [
+  "ncma",
+  "fmt",
+  "kamompt",
+  "kcnes",
+  "ptedu",
+  "ksspt",
+  "dns",
+  "kbobath",
+];
 
 // rom-back이 받는 표준 지역·분야 이름 (src/crawler/normalize/vocab.ts). 목록에 없는 값을 보내면 400이 난다.
 export const regionOptions = [
