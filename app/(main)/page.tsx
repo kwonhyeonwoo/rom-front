@@ -4,10 +4,9 @@ import { AlertCta } from "@/components/layout/alert-cta";
 import { Container } from "@/components/layout/container";
 import { SiteHeader } from "@/components/layout/site-header";
 import { HeroSearch } from "@/components/home/hero-search";
-import { PromoBanner } from "@/components/home/promo-banner";
+import { HomeAds } from "@/components/home/home-ads";
 import { HotPostsBox, LatestPostsSection, TopReviewedSeminars } from "@/components/home/community-sections";
 import { CeCourseSection, PrivateEducationSection } from "@/components/home/seminar-sections";
-import { banners } from "@/lib/seminars";
 import { siteDescription, siteName, siteUrl } from "@/lib/site";
 
 // 제목·설명은 루트 레이아웃 기본값을 쓰고, 대표 주소만 정한다
@@ -55,7 +54,7 @@ export default function Home() {
         </Container>
 
         <Container className="mt-[30px] md:mt-[52px]">
-          <PromoBanner banners={banners} />
+          <HomeAds />
         </Container>
 
         {/* 커뮤니티 최신글 + 커뮤니티 인기글 */}
