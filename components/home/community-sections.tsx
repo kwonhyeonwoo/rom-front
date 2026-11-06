@@ -42,7 +42,7 @@ export function HotPostsBox() {
     viewer,
     enabled: session !== undefined,
   });
-  const posts = data?.pages[0]?.items ?? [];
+  const posts = data?.items ?? [];
 
   return (
     <section className="rounded-[18px] border border-[#EFEFEF] px-[18px] pt-[18px] pb-2 md:px-[22px] md:pt-[22px]">
@@ -100,7 +100,7 @@ export function LatestPostsSection() {
     viewer,
     enabled: session !== undefined,
   });
-  const posts = (data?.pages[0]?.items ?? []).slice(0, 4);
+  const posts = (data?.items ?? []).slice(0, 4);
   const tabs: { value: Board | null; label: string }[] = [{ value: null, label: "전체" }, ...boards];
 
   return (
