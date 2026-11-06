@@ -142,46 +142,6 @@ export function toSeminar(api: ApiSeminar): Seminar {
   };
 }
 
-export type Banner = {
-  id: string;
-  eyebrow: string;
-  title: [string, string];
-  meta: string;
-  advertiser: string;
-  background: string;
-  poster: Poster;
-};
-
-export const banners: Banner[] = [
-  {
-    id: "seoul-mt-master",
-    eyebrow: "EARLY BIRD · ~11.20",
-    title: ["경추·요추 도수치료", "마스터 클래스"],
-    meta: "12월 주말 4회 · 서울 강남 · 보수교육 8점",
-    advertiser: "서울정형도수센터",
-    background: "#0E3B34",
-    poster: { label: "SEOUL MT CENTER", lines: ["MASTER", "CLASS"], subtitle: "경추·요추 도수치료", date: "12.6(일)", theme: "cream" },
-  },
-  {
-    id: "neuro-rehab-camp",
-    eyebrow: "WINTER CAMP · ~12.01",
-    title: ["뇌졸중 환자", "보행 재활 집중 과정"],
-    meta: "1월 주말 2회 · 경기 성남 · 보수교육 8점",
-    advertiser: "신경재활아카데미",
-    background: "#1B2F5B",
-    poster: { label: "NEURO ACADEMY", lines: ["GAIT", "REHAB"], subtitle: "보행 재활 집중", date: "1.10(토)", theme: "sky" },
-  },
-  {
-    id: "pilates-instructor",
-    eyebrow: "NEW CLASS · ~11.30",
-    title: ["임상 필라테스", "지도자 자격 과정"],
-    meta: "12월 주말 6회 · 부산 해운대",
-    advertiser: "임상재활필라테스연구회",
-    background: "#3A2A1E",
-    poster: { label: "CLINICAL PILATES", lines: ["PILATES", "MASTER"], subtitle: "지도자 자격 과정", date: "12.12(토)", theme: "forest" },
-  },
-];
-
 export function formatPrice(price: number | null) {
   if (price === null) return "가격 문의";
   return price === 0 ? "무료" : `${price.toLocaleString("ko-KR")}원`;
