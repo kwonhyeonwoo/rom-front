@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { formatPrice, type Seminar } from "@/lib/seminars";
 import { cn } from "@/lib/utils";
 import { BookmarkButton } from "./bookmark-button";
@@ -77,11 +79,12 @@ export function SourceLink({ seminar, className }: { seminar: Seminar; className
   );
 }
 
-// 상세 페이지가 생기기 전까지 신청 페이지(없으면 원문)로 연결한다
+// 제목은 롬의 세미나 상세 페이지로 연결한다 (신청·원문 링크는 상세 페이지에 있다).
+// 검색엔진이 사이트 안 링크를 따라 상세 페이지를 찾아갈 수 있게 내부 링크로 둔다
 export function SeminarLink({ seminar }: { seminar: Seminar }) {
   return (
-    <a href={seminar.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+    <Link href={`/seminars/${seminar.id}`} className="hover:underline">
       {seminar.title}
-    </a>
+    </Link>
   );
 }

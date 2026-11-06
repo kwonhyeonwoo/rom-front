@@ -107,9 +107,21 @@ function daysUntil(date: string) {
 
 const truncate = (text: string, max: number) => (text.length > max ? `${text.slice(0, max)}…` : text);
 
-export function toSeminar(api: ApiSeminar): Seminar {
+// 분야별 포스터 썸네일. 현재 시각을 쓰지 않아 서버 캐시 안에서도 부를 수 있다
+export function toPoster(api: ApiSeminar): Poster {
   const category = api.categories[0] ?? "기타";
   const poster = categoryPosters[category] ?? categoryPosters.기타;
+  const schedule = formatSchedule(api.startDate, api.endDate);
+  return {
+    label: truncate(api.host ?? api.source, 16),
+    lines: poster.lines,
+    subtitle: truncate(api.title, 12),
+    date: schedule,
+    theme: poster.theme,
+  };
+}
+
+export function toSeminar(api: ApiSeminar): Seminar {
   const schedule = formatSchedule(api.startDate, api.endDate);
   const startsIn = api.startDate ? daysUntil(api.startDate) : null;
   return {
@@ -124,13 +136,7 @@ export function toSeminar(api: ApiSeminar): Seminar {
     dday: api.deadlineDaysLeft ?? startsIn,
     // 마감일이 공지되지 않은 글은 교육 시작일이 7일 안에 있으면 임박으로 본다
     closingSoon: api.deadlineDaysLeft === null && startsIn !== null ? startsIn >= 0 && startsIn <= 7 : api.closingSoon,
-    poster: {
-      label: truncate(api.host ?? api.source, 16),
-      lines: poster.lines,
-      subtitle: truncate(api.title, 12),
-      date: schedule,
-      theme: poster.theme,
-    },
+    poster: toPoster(api),
     url: api.applyUrl ?? api.sourceUrl,
     sourceUrl: api.sourceUrl,
   };
