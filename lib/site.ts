@@ -1,6 +1,19 @@
 // 메타데이터·OG 태그·sitemap에서 공통으로 쓰는 사이트 정보
-// 배포 시 NEXT_PUBLIC_SITE_URL에 실제 도메인을 넣어야 og:image 같은 절대 URL이 올바르게 나간다
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+// og:image·twitter:image·sitemap은 절대 URL이어야 카카오톡·슬랙 등이 미리보기 이미지를 가져갈 수 있다.
+// NEXT_PUBLIC_SITE_URL(실제 도메인)이 우선이고, 없으면 Vercel이 넣어주는 배포 주소를 쓴다.
+// 둘 다 없을 때만 localhost로 떨어지는데, 이 상태로 배포하면 og:image가 localhost를 가리켜 미리보기 이미지가 빠진다.
+function resolveSiteUrl() {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit;
+  const vercelHost =
+    process.env.VERCEL_ENV === "production"
+      ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+      : (process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL);
+  if (vercelHost) return `https://${vercelHost}`;
+  return "http://localhost:3000";
+}
+
+export const siteUrl = resolveSiteUrl().replace(/\/$/, "");
 
 export const siteName = "롬";
 

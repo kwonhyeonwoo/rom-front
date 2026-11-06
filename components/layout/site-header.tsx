@@ -6,7 +6,7 @@ import { HeaderAuth } from "./header-auth";
 import { Logo } from "./logo";
 
 const navItems = [
-  { label: "세미나", href: "/" },
+  { label: "세미나", href: "/search" },
   { label: "보수교육", href: "/search?credit=1" },
   { label: "커뮤니티", href: "/community" },
 ];
@@ -14,12 +14,12 @@ const navItems = [
 export function SiteHeader({
   searchSlot,
   hideOnMobile = false,
-  activeHref = "/",
+  activeHref = "",
 }: {
   // PC 헤더 오른쪽에 넣을 검색창 (검색 결과 페이지에서 사용)
   searchSlot?: React.ReactNode;
   hideOnMobile?: boolean;
-  // 현재 메뉴. 기본은 세미나
+  // 현재 메뉴의 href. 기본은 선택 없음 (홈은 로고가 담당한다)
   activeHref?: string;
 }) {
   return (

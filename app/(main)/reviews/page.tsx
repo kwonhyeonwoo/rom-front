@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function ReviewsRoute() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader activeHref="/search" />
       <main>
         <ReviewsPage />
       </main>
