@@ -99,7 +99,8 @@ function RequestForm({ viewer }: { viewer: string }) {
   const phoneQuery = usePhoneQuery(viewer);
   const savePhone = useSavePhoneMutation();
 
-  const [name, setName] = useState("");
+  // null이면 아직 직접 고치지 않은 상태라 저장된 이름을 보여준다. 다 지워도 빈 값("")으로 남는다
+  const [name, setName] = useState<string | null>(null);
   const [licenseNumber, setLicenseNumber] = useState("");
   const [year, setYear] = useState("");
   const [field, setField] = useState<string>(LICENSE_FIELDS[0]);
@@ -122,7 +123,7 @@ function RequestForm({ viewer }: { viewer: string }) {
 
   const thisYear = new Date().getFullYear();
   const years = Array.from({ length: thisYear - 1969 }, (_, index) => thisYear - index);
-  const shownName = name || user?.name || "";
+  const shownName = name ?? user?.name ?? "";
   const valid =
     shownName.trim().length >= 2 &&
     /^\d{3,10}$/.test(licenseNumber) &&
